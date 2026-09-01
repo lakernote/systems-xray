@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Systems X-Ray：跟随一条 Redis Key，从业务对象、RESP、事件循环、字典与对象编码，到过期、淘汰、持久化、复制、Sentinel 和 Cluster。" />
+    <meta name="theme-color" content="#f3f0e9" />
+    <title>Systems X-Ray · Redis Key 完整旅程</title>
+    <link rel="icon" href="../assets/brand-mark.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#deck">跳到课程内容</a>
+    <header class="course-bar">
+      <a class="brand" href="../index.html" aria-label="返回 Systems X-Ray 课程首页">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 32 32"><circle cx="16" cy="6" r="3"/><circle cx="7" cy="16" r="3"/><circle cx="25" cy="16" r="3"/><circle cx="16" cy="26" r="3"/><path d="M14 8.5 9.2 13M18 8.5l4.8 4.5M9.5 18.5l4.3 5M22.5 18.5l-4.3 5"/></svg></span>
+        <span><strong>Systems X-Ray</strong><small>Redis · 我是一条 Key</small></span>
+      </a>
+      <div class="course-position" aria-live="polite"><strong id="header-title">一条 Key 的完整旅程</strong><code id="header-count">01 / --</code></div>
+      <div class="header-actions">
+        <a class="header-tool course-switch" href="../postgresql/" aria-label="打开 PostgreSQL 课程"><span>PostgreSQL</span></a>
+        <div class="trace-pill" aria-label="当前追踪键"><i></i><code>session:user:9527</code></div>
+        <button id="open-overview" class="header-tool" type="button" aria-label="打开目录" aria-expanded="false"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>目录</span></button>
+        <button id="deep-toggle" class="header-tool" type="button" aria-label="打开深挖资料" aria-expanded="false" aria-controls="deep-panel"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4zM8 8h8M8 12h8M8 16h5"/></svg><span>深挖</span></button>
+      </div>
+    </header>
+
+    <main id="deck" class="deck-shell">
+      <section class="stage-wrap" aria-label="Redis 动态课程">
+        <div id="slide-stage" class="slide-stage"></div>
+        <footer class="transport" aria-label="幻灯片翻页">
+          <button id="prev" class="pager previous" type="button"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg><strong>上一页</strong></button>
+          <div class="page-position"><strong id="page-count">01 / --</strong><span id="page-title">一条 Key 的完整旅程</span></div>
+          <button id="next" class="pager next primary" type="button"><strong>下一页</strong><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></button>
+        </footer>
+      </section>
+    </main>
+
+    <aside id="deep-panel" class="deep-panel" aria-hidden="true" aria-labelledby="deep-title" inert>
+      <header><div><span id="deep-kicker">DEEP DIVE · 当前页面</span><h2 id="deep-title">一条 Key 的完整旅程</h2><small id="deep-stage">当前边界 · 全景</small></div><button id="close-deep" type="button" aria-label="关闭深挖资料"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
+      <div class="deep-scroll">
+        <section><span>边界与补充</span><p id="deep-boundary"></p></section>
+        <section><span>故障推演</span><ol id="deep-failure"></ol></section>
+        <section><span>线上怎么查</span><div id="deep-inspect"></div></section>
+        <section><span>自测题</span><p id="deep-question"></p><details id="deep-answer"><summary>想好后再展开答案</summary><p id="deep-answer-text"></p></details></section>
+        <section><span>继续学习</span><div id="deep-related"></div><a id="deep-source" href="https://redis.io/docs/latest/" target="_blank" rel="noreferrer">查看本页官方依据 ↗</a></section>
+      </div>
+    </aside>
+    <button id="deep-scrim" class="deep-scrim" type="button" aria-label="关闭深挖资料" hidden></button>
+
+    <div id="overview" class="overview" aria-hidden="true" inert><header><div><span>REDIS · KEY JOURNEY</span><h2>选择一个问题继续</h2></div><button id="close-overview" type="button">关闭 <kbd>Esc</kbd></button></header><div id="overview-grid"></div></div>
+
+    <script src="./course.js"></script>
+    <script src="./visuals.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>

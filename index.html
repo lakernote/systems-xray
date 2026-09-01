@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Systems X-Ray：用一条数据的物理旅程学习 Kafka、OpenSearch、Redis 与 PostgreSQL。" />
+    <meta name="theme-color" content="#0c1728" />
+    <title>Systems X-Ray · 系统原理可视化课程</title>
+    <link rel="icon" href="./assets/brand-mark.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./assets/home.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#courses">跳到课程目录</a>
+
+    <header class="site-header">
+      <a class="site-brand" href="./" aria-label="Systems X-Ray 首页">
+        <img src="./assets/brand-mark.svg" width="42" height="42" alt="" />
+        <span><strong>Systems X-Ray</strong><small>SEE HOW SOFTWARE WORKS FROM THE INSIDE</small></span>
+      </a>
+      <div class="header-meta"><span>INTERACTIVE SYSTEMS ATLAS</span><b>4 COURSES</b><b>241 PAGES</b></div>
+    </header>
+
+    <main class="atlas-shell">
+      <section class="atlas-intro" aria-labelledby="atlas-title">
+        <div class="intro-copy">
+          <p class="eyebrow">LEARN BY FOLLOWING ONE DATA</p>
+          <h1 id="atlas-title">进入系统内部，<br />看见数据怎么走。</h1>
+          <p class="intro-lede">从业务代码出发，一路追到进程、内存、网络、文件、副本与故障边界。</p>
+        </div>
+
+        <div class="xray-stage" aria-live="polite">
+          <div class="scanner-ring scanner-ring-a"></div>
+          <div class="scanner-ring scanner-ring-b"></div>
+          <div class="scanner-axis axis-x"></div><div class="scanner-axis axis-y"></div>
+          <div class="scanner-sweep"></div>
+          <div class="scan-object">
+            <span id="focus-kind">COURSE 01</span>
+            <strong id="focus-object">EVENT</strong>
+            <small id="focus-id">#A1024</small>
+          </div>
+          <p id="focus-flow">Producer → Broker → Segment → Consumer</p>
+        </div>
+
+        <div class="intro-foot"><span>一页一个问题</span><i></i><span>物理路径</span><i></i><span>设计取舍</span><i></i><span>生产故障</span></div>
+      </section>
+
+      <section id="courses" class="course-directory" aria-labelledby="directory-title">
+        <header class="directory-head">
+          <div><p>COURSE DIRECTORY</p><h2 id="directory-title">选择一条数据，开始追踪。</h2></div>
+          <span>键盘 <kbd>1</kbd>—<kbd>4</kbd> 直达</span>
+        </header>
+
+        <nav class="course-list" aria-label="课程列表">
+          <a class="course-row is-selected" href="./kafka/" data-shortcut="1" data-kind="COURSE 01" data-object="EVENT" data-id="#A1024" data-flow="Producer → Broker → Segment → Consumer">
+            <span class="course-number">01</span>
+            <span class="course-glyph" aria-hidden="true"><svg viewBox="0 0 40 40"><path d="M7 20h8m10 0h8M15 12v16m10-16v16"/><circle cx="15" cy="20" r="4"/><circle cx="25" cy="20" r="4"/></svg></span>
+            <span class="course-title"><small>DISTRIBUTED LOG</small><strong>Kafka</strong><em>我是一条 Event <b>#A1024</b></em></span>
+            <span class="course-flow">Producer <i></i> Broker <i></i> Segment <i></i> Consumer</span>
+            <span class="course-pages"><b>66</b><small>页</small></span>
+            <span class="course-enter">进入 <b>↗</b></span>
+          </a>
+
+          <a class="course-row" href="./opensearch/" data-shortcut="2" data-kind="COURSE 02" data-object="DOCUMENT" data-id="#D2048" data-flow="CRUD → Lucene → Search → Vector">
+            <span class="course-number">02</span>
+            <span class="course-glyph" aria-hidden="true"><svg viewBox="0 0 40 40"><circle cx="18" cy="18" r="9"/><path d="m25 25 8 8M13 18h10M18 13v10"/></svg></span>
+            <span class="course-title"><small>SEARCH ENGINE</small><strong>OpenSearch</strong><em>我是一条 Document <b>#D2048</b></em></span>
+            <span class="course-flow">CRUD <i></i> Lucene <i></i> Search <i></i> Vector</span>
+            <span class="course-pages"><b>55</b><small>页</small></span>
+            <span class="course-enter">进入 <b>↗</b></span>
+          </a>
+
+          <a class="course-row" href="./redis/" data-shortcut="3" data-kind="COURSE 03" data-object="KEY" data-id="session:user:9527" data-flow="RESP → Dict → AOF → Cluster">
+            <span class="course-number">03</span>
+            <span class="course-glyph" aria-hidden="true"><svg viewBox="0 0 40 40"><path d="m7 15 13-7 13 7-13 7-13-7Zm0 6 13 7 13-7M7 27l13 7 13-7"/></svg></span>
+            <span class="course-title"><small>IN-MEMORY STORE</small><strong>Redis</strong><em>我是一条 Key <b>session:user:9527</b></em></span>
+            <span class="course-flow">RESP <i></i> Dict <i></i> AOF <i></i> Cluster</span>
+            <span class="course-pages"><b>55</b><small>页</small></span>
+            <span class="course-enter">进入 <b>↗</b></span>
+          </a>
+
+          <a class="course-row" href="./postgresql/" data-shortcut="4" data-kind="COURSE 04" data-object="ROW" data-id="orders.id=A1024" data-flow="Planner → Heap → MVCC → WAL">
+            <span class="course-number">04</span>
+            <span class="course-glyph" aria-hidden="true"><svg viewBox="0 0 40 40"><path d="M7 8h26v24H7zM7 16h26M7 24h26M16 8v24"/></svg></span>
+            <span class="course-title"><small>RELATIONAL DATABASE</small><strong>PostgreSQL</strong><em>我是一行 Row <b>orders.id=A1024</b></em></span>
+            <span class="course-flow">Planner <i></i> Heap <i></i> MVCC <i></i> WAL</span>
+            <span class="course-pages"><b>65</b><small>页</small></span>
+            <span class="course-enter">进入 <b>↗</b></span>
+          </a>
+        </nav>
+
+        <footer class="directory-foot"><span>STATIC HTML · NO BUILD</span><span>READY FOR GITHUB PAGES</span><span>© SYSTEMS X-RAY</span></footer>
+      </section>
+    </main>
+
+    <script src="./assets/home.js"></script>
+  </body>
+</html>

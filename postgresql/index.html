@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Systems X-Ray：跟随 PostgreSQL 中的一行订单，从 SQL 协议、Backend、Planner 与 Executor，到 Shared Buffers、Heap Page、B-Tree、MVCC、WAL、VACUUM、复制与恢复。" />
+    <meta name="theme-color" content="#f3f1ea" />
+    <title>Systems X-Ray · PostgreSQL Row 完整旅程</title>
+    <link rel="icon" href="../assets/brand-mark.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#deck">跳到课程内容</a>
+    <header class="course-bar">
+      <a class="brand" href="../index.html" aria-label="返回 Systems X-Ray 课程首页">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M8 7.5c4-4 13-3.7 16.5.4 2.8 3.3 2.5 10.4-.7 14.5-2.1 2.6-5.4 3.9-7.4 2.2-1.3-1.1-.7-3.2.6-4.4-4.5.3-8.1-1-10-3.8-2-2.9-1.5-6.2 1-8.4Z"/><path d="M17 8.5c3 1.2 4.4 4.5 3.7 7.8-.5 2.5-2.5 4.4-5 4.7M12 10.5c-1.2 2.2-1 4.2.5 6"/><circle cx="21.8" cy="10.2" r=".8" fill="currentColor" stroke="none"/></svg></span>
+        <span><strong>Systems X-Ray</strong><small>PostgreSQL · 我是一行 Row</small></span>
+      </a>
+      <div class="course-position" aria-live="polite"><strong id="header-title">一行订单的完整旅程</strong><code id="header-count">01 / --</code></div>
+      <div class="header-actions">
+        <a class="header-tool course-switch" href="../redis/" aria-label="打开 Redis 课程"><span>Redis</span></a>
+        <div class="trace-pill" aria-label="当前追踪行"><i></i><code>order_id=A1024</code></div>
+        <button id="open-overview" class="header-tool" type="button" aria-label="打开目录" aria-expanded="false"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>目录</span></button>
+        <button id="deep-toggle" class="header-tool" type="button" aria-label="打开深挖资料" aria-expanded="false" aria-controls="deep-panel"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4zM8 8h8M8 12h8M8 16h5"/></svg><span>深挖</span></button>
+      </div>
+    </header>
+
+    <main id="deck" class="deck-shell">
+      <section class="stage-wrap" aria-label="PostgreSQL 动态课程">
+        <div id="slide-stage" class="slide-stage"></div>
+        <footer class="transport" aria-label="幻灯片翻页">
+          <button id="prev" class="pager previous" type="button"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg><strong>上一页</strong></button>
+          <div class="page-position"><strong id="page-count">01 / --</strong><span id="page-title">一行订单的完整旅程</span></div>
+          <button id="next" class="pager next primary" type="button"><strong>下一页</strong><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></button>
+        </footer>
+      </section>
+    </main>
+
+    <aside id="deep-panel" class="deep-panel" aria-hidden="true" aria-labelledby="deep-title" inert>
+      <header><div><span id="deep-kicker">DEEP DIVE · 当前页面</span><h2 id="deep-title">一行订单的完整旅程</h2><small id="deep-stage">当前边界 · 全景</small></div><button id="close-deep" type="button" aria-label="关闭深挖资料"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
+      <div class="deep-scroll">
+        <section><span>边界与补充</span><p id="deep-boundary"></p></section>
+        <section><span>故障推演</span><ol id="deep-failure"></ol></section>
+        <section><span>线上怎么查</span><div id="deep-inspect"></div></section>
+        <section><span>自测题</span><p id="deep-question"></p><details id="deep-answer"><summary>想好后再展开答案</summary><p id="deep-answer-text"></p></details></section>
+        <section><span>继续学习</span><div id="deep-related"></div><a id="deep-source" href="https://www.postgresql.org/docs/18/" target="_blank" rel="noreferrer">查看本页官方依据 ↗</a></section>
+      </div>
+    </aside>
+    <button id="deep-scrim" class="deep-scrim" type="button" aria-label="关闭深挖资料" hidden></button>
+
+    <div id="overview" class="overview" aria-hidden="true" inert><header><div><span>POSTGRESQL · ROW JOURNEY</span><h2>选择一个问题继续</h2></div><button id="close-overview" type="button">关闭 <kbd>Esc</kbd></button></header><div id="overview-grid"></div></div>
+
+    <script src="./course.js"></script>
+    <script src="./visuals.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>

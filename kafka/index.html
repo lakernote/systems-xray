@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Systems X-Ray：像翻 PPT 一样，跟随一条 Kafka Event 穿过 Producer、Broker、物理存储、副本、Consumer Group、Rebalance、Fetch 与 Offset Commit。" />
+    <meta name="theme-color" content="#f4f1ea" />
+    <title>Systems X-Ray · Kafka Event 完整旅程</title>
+    <link rel="icon" href="../assets/brand-mark.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#deck">跳到课程内容</a>
+    <header class="course-bar">
+      <a class="brand" href="../index.html" aria-label="返回 Systems X-Ray 课程首页">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 32 32"><circle cx="16" cy="6" r="3"/><circle cx="7" cy="16" r="3"/><circle cx="25" cy="16" r="3"/><circle cx="16" cy="26" r="3"/><path d="M14 8.5 9.2 13M18 8.5l4.8 4.5M9.5 18.5l4.3 5M22.5 18.5l-4.3 5"/></svg></span>
+        <span><strong>Systems X-Ray</strong><small>Kafka · 我是一条 Event</small></span>
+      </a>
+      <div class="course-position" aria-live="polite">
+        <strong id="header-step-title">一条 Event 的完整旅程</strong>
+        <code id="header-page-count">01 / --</code>
+      </div>
+      <div class="header-actions">
+        <a class="header-tool course-switch" href="../opensearch/" aria-label="打开 OpenSearch 课程"><span>OpenSearch</span></a>
+        <a class="header-tool course-switch" href="../redis/" aria-label="打开 Redis 课程"><span>Redis</span></a>
+        <a class="header-tool course-switch" href="../postgresql/" aria-label="打开 PostgreSQL 课程"><span>PostgreSQL</span></a>
+        <div class="trace-pill" aria-label="当前追踪消息"><i></i><code>#A1024</code></div>
+        <button id="open-overview" class="header-tool" type="button" aria-label="目录" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>目录</span></button>
+        <button id="notes-toggle" class="header-tool" type="button" aria-label="打开深挖资料" aria-expanded="false" aria-controls="notes-panel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4zM8 8h8M8 12h8M8 16h5"/></svg><span>深挖</span></button>
+      </div>
+    </header>
+
+    <main id="deck" class="deck-shell">
+      <section class="stage-wrap" aria-label="Kafka 动态课程">
+        <div class="slide-stage">
+          <article class="slide cover is-active" data-title="一条 Event 的完整旅程" data-section="00 · OPENING" aria-hidden="false">
+            <div class="cover-copy"><p class="eyebrow">KAFKA · END-TO-END EVENT JOURNEY</p><h1>我是 Event <em>#A1024</em><br />这次，请跟紧我。</h1><p class="lede">从 Java 对象到 Producer、网络、Broker、Segment、副本，再到 Consumer Group、Rebalance、业务处理与 Offset Commit。</p><div class="learning-contract"><span>整门课只回答一个问题</span><strong>一条消息从产生到消费，到底经过了什么？</strong></div></div>
+            <div class="cover-visual" aria-hidden="true"><div class="event-orbit orbit-one"></div><div class="event-orbit orbit-two"></div><div class="event-core"><span>EVENT</span><strong>#A1024</strong><small>Java Object</small></div><div class="orbit-label label-a">序列化</div><div class="orbit-label label-b">复制</div><div class="orbit-label label-c">消费</div><div class="orbit-label label-d">存储</div></div>
+            <p class="memory-line"><span>记住一句话</span> Kafka 传递的不是“对象”，而是一路改变形态的字节与记录。</p>
+          </article>
+
+          <article class="slide topology-slide" data-title="先看整张地图" data-section="01 · HIGH LEVEL" aria-hidden="true">
+            <header class="slide-heading"><span>QUESTION 01</span><h2>这条 Event，要穿过哪些边界？</h2><p>先建立地图，后面每一页只放大一个位置。</p></header>
+            <div class="architecture-atlas diagram-surface" aria-label="控制面、数据面、复制面和物理存储分层展示的一条 Kafka 消息完整旅程">
+              <section class="atlas-control" aria-label="KRaft 控制面">
+                <header><span>01 · KRAFT CONTROL PLANE</span><small>只决定“谁负责”，不搬运 #A1024</small></header>
+                <div class="control-rail">
+                  <div><b>Controller Quorum</b><span>C0 · C1 · C2</span></div><i></i>
+                  <div><b>Cluster Metadata</b><span>orders.created / P1 Leader = B1</span></div><i></i>
+                  <div><b>Group Coordinator</b><span>order-fulfillment → B2（示例）</span></div>
+                </div>
+              </section>
+
+              <section class="atlas-data-plane" aria-label="Kafka 数据面">
+                <header><span>02 · DATA PLANE</span><small>橙线 = #A1024 的实际字节路径</small></header>
+
+                <section class="atlas-domain atlas-producers">
+                  <header><span>PRODUCER HOSTS</span><small>JVM · 3 instances</small></header>
+                  <div class="atlas-stack">
+                    <div class="atlas-service is-context"><b>checkout-service</b><small>KafkaProducer</small></div>
+                    <button class="atlas-service is-tracked hotspot" type="button" aria-label="深挖 order-service 生产 #A1024 的边界与故障"><i></i><b>order-service</b><small>ProducerRecord → bytes</small><em>#A1024</em></button>
+                    <div class="atlas-service is-context"><b>inventory-service</b><small>KafkaProducer</small></div>
+                  </div>
+                  <div class="atlas-pipeline"><span>API</span><i></i><span>Serialize</span><i></i><span>Batch</span></div>
+                </section>
+
+                <div class="atlas-hop produce-hop"><small>ProduceRequest</small><span>TCP · B1:9092</span><i><b>#A1024</b></i></div>
+
+                <section class="atlas-domain atlas-cluster">
+                  <header><span>KAFKA CLUSTER · 3 BROKERS</span><small>orders.created · 6 partitions · RF=3 · minISR=2</small></header>
+                  <div class="atlas-topic"><b>TOPIC · orders.created</b><span>P0</span><strong>P1</strong><span>P2</span><span>P3</span><span>P4</span><span>P5</span></div>
+                  <div class="atlas-brokers">
+                    <article><header><b>B0</b><small>broker-0</small></header><span>P0 · L</span><strong class="p1-follower">P1 · FOLLOWER</strong><span>P3 · L</span><footer>Page Cache + NVMe</footer></article>
+                    <article class="is-leader"><header><b>B1</b><small>broker-1</small></header><span>P4 · L</span><button class="p1-leader hotspot" type="button" aria-label="深挖 P1 Leader、副本追加与故障恢复"><b>P1 · LEADER</b><small>append offset 42</small><em>#A1024</em></button><span>P0 · F</span><footer>Page Cache + NVMe</footer></article>
+                    <article><header><b>B2</b><small>broker-2</small></header><span>P2 · L</span><strong class="p1-follower">P1 · FOLLOWER</strong><span>P5 · L</span><footer>Page Cache + NVMe</footer></article>
+                  </div>
+                  <div class="atlas-replication"><span>03 · REPLICATION PLANE</span><b>B0 Follower</b><i></i><strong>B1 Leader · HW 43</strong><i></i><b>B2 Follower</b><small>Follower Fetch → ISR 全部确认 → acks=all</small></div>
+                </section>
+
+                <div class="atlas-hop fetch-hop"><small>FetchResponse</small><span>P1 · offset 42</span><i><b>#A1024</b></i></div>
+
+                <section class="atlas-domain atlas-consumers">
+                  <header><span>CONSUMER GROUP</span><small>order-fulfillment</small></header>
+                  <div class="atlas-consumer-row">
+                    <button class="atlas-consumer is-tracked hotspot" type="button" aria-label="深挖 C0 消费 P1 与提交 Offset 的故障边界"><b>C0</b><span>P0 · <strong>P1</strong></span><small>fetch #A1024</small></button>
+                    <div class="atlas-consumer"><b>C1</b><span>P2 · P3</span><small>own partitions</small></div>
+                    <div class="atlas-consumer"><b>C2</b><span>P4 · P5</span><small>own partitions</small></div>
+                  </div>
+                  <div class="atlas-commit"><span>PROCESS</span><b>业务副作用完成</b><i></i><span>COMMIT</span><strong>P1 · 42 → 43</strong></div>
+                </section>
+              </section>
+
+              <section class="atlas-physical" aria-label="物理存储剖面">
+                <header><span>04 · PHYSICAL STORAGE · BROKER 1 / P1</span><small>ACK 条件与逐条 fsync 不是一回事</small></header>
+                <div class="physical-rail"><div><b>RecordBatch</b><span>compressed bytes</span></div><i></i><div class="is-memory"><b>Linux Page Cache</b><span>dirty file pages</span></div><i></i><div><b>orders.created-1/</b><span>Partition directory</span></div><i></i><div class="is-file"><b>000...040.log</b><span>.index · .timeindex · .txnindex</span></div></div>
+              </section>
+
+              <div class="atlas-legend"><span><i class="data"></i>数据流</span><span><i class="replica"></i>副本拉取</span><span><i class="control"></i>控制面</span><span><i class="durable"></i>已确认 / 存储边界</span></div>
+            </div>
+            <p class="memory-line"><span>完整终点</span> order-service 把 #A1024 写入 B1 上的 P1 Leader，复制到 B0/B2，再由唯一持有 P1 的 C0 拉取并提交 Offset 43。</p>
+          </article>
+
+          <article class="slide" data-title="Event 在代码里出生" data-section="02 · BUSINESS CODE" aria-hidden="true">
+            <header class="slide-heading"><span>QUESTION 02</span><h2>Event 刚出生时，身体里有什么？</h2><p>此刻它只活在 order-service 的 JVM 堆内存中。</p></header>
+            <div class="code-scene"><pre class="code-card" aria-label="Java 生产者代码"><code><span class="comment">// ① 业务对象：还不是 Kafka 字节</span>
+var event = new OrderCreated(<mark>"A1024"</mark>, 99.80);
+
+<span class="comment">// ② Headers 在链路追踪、多租户中很常用</span>
+var headers = new RecordHeaders()
+  .add(<mark>"traceparent"</mark>, traceBytes)
+  .add(<mark>"tenant-id"</mark>, tenantBytes);
+
+<span class="comment">// ③ partition = null，让 Producer 根据 key 选择</span>
+var record = new ProducerRecord&lt;String, OrderCreated&gt;(
+  <mark>"orders.created"</mark>, null, null,
+  <mark>"user-9527"</mark>, event, headers
+);
+
+producer.<strong>send(record)</strong>;</code></pre><button class="record-anatomy hotspot" type="button" data-detail="record" aria-label="查看 ProducerRecord 六个字段"><span class="object-tag">JVM OBJECT</span><strong>ProducerRecord&lt;K,V&gt;</strong><dl><div><dt>topic</dt><dd>orders.created</dd></div><div><dt>partition</dt><dd>null</dd></div><div><dt>timestamp</dt><dd>null</dd></div><div><dt>key</dt><dd>user-9527</dd></div><div><dt>value</dt><dd>OrderCreated{…}</dd></div><div><dt>headers</dt><dd>traceparent · tenant-id</dd></div></dl><small>点击拆开这个对象 →</small></button></div>
+            <p class="memory-line"><span>记住一句话</span> key 决定“去哪”，value 是业务内容，headers 携带横切上下文。</p>
+          </article>
+
+          <article class="slide" data-title="send 不是直接发网络" data-section="03 · PRODUCER PROCESS" aria-hidden="true">
+            <header class="slide-heading"><span>QUESTION 03</span><h2>调用 send()，会立刻写 Socket 吗？</h2><p>不会。Producer 用两个线程把业务调用与网络 I/O 解耦。</p></header>
+            <div class="process-cutaway diagram-surface"><div class="host-shell"><span>PHYSICAL HOST · order-service-7d9f</span><div class="jvm-shell"><span>JVM PROCESS · PID 18420</span><div class="thread-lane app-thread"><b>业务线程 · http-nio-8080-exec-7</b><button class="process-node active hotspot" data-detail="send" type="button"><i>00</i><strong>KafkaProducer.send()</strong><small>通常很快返回 Future</small></button><button class="process-node" type="button"><i>01</i><strong>RecordAccumulator</strong><small>把记录放入内存批次</small></button></div><div class="thread-arrow"><span>共享缓冲区</span></div><div class="thread-lane network-thread"><b>后台线程 · kafka-producer-network-thread</b><button class="process-node" type="button"><i>02</i><strong>Sender</strong><small>唤醒、取批次、组请求</small></button><button class="process-node" type="button"><i>03</i><strong>NetworkClient</strong><small>异步网络 I/O</small></button></div></div></div><div class="false-route"><span>send() ≠ 每条消息一次网络请求</span></div></div>
+            <p class="memory-line"><span>关键分界</span> 正常时异步入队；Metadata 未就绪或 Buffer 满时，send 可在 max.block.ms 内阻塞。</p>
+          </article>
+
+          <article class="slide" data-title="拦截器经过 Event" data-section="04 · INTERCEPTOR" aria-hidden="true">
+            <header class="slide-heading"><span>QUESTION 04</span><h2>发送之前，谁能最后改一次 Event？</h2><p>ProducerInterceptor 链会按注册顺序调用 onSend(record)。</p></header>
+            <div class="conveyor-scene diagram-surface"><div class="conveyor"><span class="belt-line"></span><div class="parcel"><i></i><strong>#A1024</strong><small>ProducerRecord</small></div></div><button class="inspection-gate hotspot" data-detail="interceptor" type="button"><span>INTERCEPTOR GATE</span><strong>onSend(record)</strong><small>加 header · 埋点 · 审计</small></button><div class="header-tags"><span>traceparent</span><span>tenant-id</span><span class="new-tag">schema-version +</span></div><div class="warning-note"><b>不要在这里做重活</b><span>它运行在调用 send() 的业务线程上。</span></div></div>
+            <p class="memory-line"><span>形态未变</span> 仍是 ProducerRecord，只是字段或 headers 可能被补充。</p>
+          </article>
+
+          <article class="slide" data-title="对象变成字节" data-section="05 · SERIALIZER" aria-hidden="true">
+            <header class="slide-heading"><span>QUESTION 05</span><h2>Java 对象如何穿过网络？</h2><p>Key 与 Value 分别交给各自的 Serializer，Headers 本来就是 byte[]。</p></header>
+            <div class="serializer-lab diagram-surface"><div class="specimen object-specimen"><span>INPUT · JVM HEAP</span><div class="object-cube"><b>OrderCreated</b><code>{ orderId: "A1024", amount: 99.80 }</code></div></div><button class="serializer-machine hotspot" data-detail="serializer" type="button"><span>SERIALIZER</span><strong>serialize()</strong><div class="gear" aria-hidden="true"></div><small>契约必须与 Consumer 一致</small></button><div class="specimen bytes-specimen"><span>OUTPUT · BYTE[]</span><div class="byte-strip"><i>7B</i><i>22</i><i>6F</i><i>72</i><i>64</i><i>65</i><i>72</i><i>49</i><i>64</i><i>22</i><i>…</i></div><code>valueBytes · JSON / Avro / Protobuf</code></div><div class="split-callout"><span><b>key.serializer</b> String → UTF-8 bytes</span><span><b>value.serializer</b> OrderCreated → schema bytes</span></div></div>
+            <p class="memory-line"><span>第一次变身</span> ProducerRecord&lt;K,V&gt; → keyBytes + valueBytes + headers。</p>
+          </article>
+
+          <article class="slide" data-title="Key 选择 Partition" data-section="06 · PARTITIONER" aria-hidden="true">
+            <header class="slide-heading"><span>QUESTION 06</span><h2>六个 Partition，为什么我去 P1？</h2><p>有 key 时，相同 key 稳定映射到同一 Partition，从而保住局部顺序。</p></header>
+            <div class="partition-scene diagram-surface"><div class="hash-pipeline"><div><span>serializedKey</span><code>"user-9527"</code></div><i>→</i><div><span>murmur2</span><code>313,426,957</code></div><i>→</i><div><span>% 6</span><code>partition <b>1</b></code></div></div><div class="partition-rack" aria-label="orders.created 的六个 Partition"><button type="button"><small>P0</small><span></span><span></span></button><button class="selected hotspot" data-detail="partitioner" type="button"><small>P1</small><span></span><span class="event-slot">#A1024</span></button><button type="button"><small>P2</small><span></span><span></span></button><button type="button"><small>P3</small><span></span><span></span></button><button type="button"><small>P4</small><span></span><span></span></button><button type="button"><small>P5</small><span></span><span></span></button></div><div class="ordering-rule"><span>顺序保证的边界</span><strong>同一个 Partition 内有序</strong><small>不是整个 Topic 全局有序</small></div></div>
+            <p class="memory-line"><span>我拿到地址了</span> TopicPartition = orders.created-1。</p>
+          </article>
+
+          <article class="slide" data-title="进入 ProducerBatch" data-section="07 · ACCUMULATOR" aria-hidden="true">
+            <header class="slide-heading"><span>QUESTION 07</span><h2>为什么不让我一条一条发送？</h2><p>RecordAccumulator 按 TopicPartition 维护双端队列，把多条记录装进 ProducerBatch。</p></header>
+            <div class="batch-scene diagram-surface"><div class="incoming-records"><span>BUSINESS THREADS</span><i class="record-chip hot">#A1024</i><i class="record-chip">#A1025</i><i class="record-chip">#A1026</i></div><div class="accumulator-shell"><span>RECORD ACCUMULATOR · buffer.memory 32 MiB</span><div class="deque-row"><b>P0 deque</b><div class="batch muted">Batch · 11 KiB</div></div><button class="deque-row active hotspot" data-detail="accumulator" type="button"><b>P1 deque</b><div class="batch"><span>#A1019</span><span>#A1021</span><span class="hot">#A1024</span><i>13 KiB</i></div></button><div class="deque-row"><b>P2 deque</b><div class="empty-batch">empty</div></div></div><div class="batch-gauges"><div><span>batch.size</span><strong>16 KiB</strong><small>批次目标上限</small></div><div><span>linger.ms</span><strong>5 ms</strong><small>最多等多久</small></div><div><span>compression.type</span><strong>zstd</strong><small>按批次压缩</small></div></div></div>
+            <p class="memory-line"><span>吞吐来自这里</span> 批处理把多条 Event 共用一次压缩、协议头与网络往返。</p>
+          </article>
+
+          <article class="slide" data-title="Sender 组装请求" data-section="08 · SENDER" aria-hidden="true">
+            <header class="slide-heading"><span>QUESTION 08</span><h2>什么时候，这个 Batch 可以出发？</h2><p>达到 batch.size、超过 linger.ms，或内存压力出现时，Sender 会把 ready batch 取走。</p></header>
+            <div class="sender-scene diagram-surface"><div class="thread-badge">kafka-producer-network-thread | order-producer-1</div><div class="sender-flow"><button class="flow-module hotspot" data-detail="sender" type="button"><span>01</span><strong>Sender.run()</strong><small>扫描 ready partitions</small></button><i>→</i><div class="flow-module"><span>02</span><strong>drain()</strong><small>P1 ProducerBatch</small></div><i>→</i><div class="flow-module"><span>03</span><strong>ProduceRequest</strong><small>按目标 Broker 合并</small></div><i>→</i><div class="flow-module"><span>04</span><strong>NetworkClient</strong><small>交给 Selector</small></div></div><div class="request-envelope"><span>PRODUCE REQUEST · broker 1</span><dl><div><dt>acks</dt><dd>all</dd></div><div><dt>timeout</dt><dd>30s</dd></div><div><dt>topic</dt><dd>orders.created</dd></div><div><dt>partition</dt><dd>1</dd></div><div><dt>record batch</dt><dd>3 records · zstd</dd></div></dl></div></div>
+            <p class="memory-line"><span>第二次变身</span> ProducerBatch → Kafka ProduceRequest。</p>
+          </article>
+
+          <article class="slide" data-title="找到 P1 Leader" data-section="09 · METADATA & ROUTING" aria-hidden="true">
+            <header class="slide-heading"><span>QUESTION 09</span><h2>三台 Broker，为什么请求只去 Broker 1？</h2><p>Producer 先查 Metadata：orders.created-1 的 Leader 当前在 Broker 1。</p></header>
+            <div class="cluster-rack diagram-surface"><div class="broker-chassis"><span>BROKER 0 · :9092</span><div class="replica muted">P0 · Leader</div><div class="replica">P1 · Follower</div><div class="replica">P2 · Follower</div></div><button class="broker-chassis active hotspot" data-detail="leader" type="button"><span>BROKER 1 · :9092</span><div class="leds"><i></i><i></i><i></i></div><div class="replica">P0 · Follower</div><div class="replica hot">P1 · LEADER <b>#A1024 →</b></div><div class="replica muted">P2 · Follower</div></button><div class="broker-chassis"><span>BROKER 2 · :9092</span><div class="replica">P0 · Follower</div><div class="replica">P1 · Follower</div><div class="replica muted">P2 · Leader</div></div><svg class="cluster-route" viewBox="0 0 1100 420" preserveAspectRatio="none" aria-hidden="true"><path d="M40 40 C270 40 425 36 550 115"/><circle r="7"><animateMotion dur="2.3s" repeatCount="indefinite" path="M40 40 C270 40 425 36 550 115"/></circle></svg><div class="metadata-card"><span>METADATA CACHE</span><code>orders.created-1 → broker 1</code></div></div>
+            <p class="memory-line"><span>路由规则</span> Produce 请求只发给 Partition Leader；Follower 之后再从 Leader 拉取副本。</p>
+          </article>
+
+          <article class="slide" data-title="经过操作系统与网络" data-section="10 · NETWORK" aria-hidden="true">
+            <header class="slide-heading"><span>QUESTION 10</span><h2>请求如何离开 Producer 机器？</h2><p>目标 Broker 已确定，字节再经过 Java NIO、Socket、内核 TCP 与 NIC。</p></header>
+            <div class="network-cross-section diagram-surface"><div class="layer java-layer"><span>USER SPACE · JVM</span><button class="net-node hotspot" data-detail="network" type="button"><b>Kafka NetworkClient</b><small>Kafka Protocol bytes</small></button><i class="down-arrow"></i><div class="net-node"><b>KafkaChannel / TLS</b><small>SSL 启用时在用户态加密</small></div></div><div class="layer kernel-layer"><span>KERNEL SPACE · LINUX</span><div class="net-node"><b>SocketChannel.write()</b><small>系统调用进入内核</small></div><i class="right-arrow"></i><div class="net-node"><b>TCP send buffer</b><small>分段 · 重传 · 拥塞控制</small></div></div><div class="layer hardware-layer"><span>HARDWARE</span><div class="net-node"><b>NIC · eth0</b><small>TCP segments → packets → frames</small></div><div class="cable"><i></i><i></i><i></i><span>physical network</span></div></div><div class="packet-token"><span>#A1024</span><small>现在只是字节的一部分</small></div></div>
+            <p class="memory-line"><span>物理边界</span> TLS（若启用）发生在 JVM 用户态；可靠传输随后由内核 TCP 栈负责。</p>
+          </article>
+
+          <article class="slide" data-title="Broker 接住请求" data-section="11 · BROKER REQUEST PATH" aria-hidden="true">
+            <header class="slide-heading"><span>QUESTION 11</span><h2>字节到达 Broker 后，谁接住它？</h2><p>网络线程只负责收发；真正处理 ProduceRequest 的是请求处理线程。</p></header>
+            <div class="broker-cutaway diagram-surface"><span class="machine-label">PHYSICAL HOST · kafka-broker-1</span><div class="broker-layers"><div class="broker-layer kernel"><span>LINUX KERNEL</span><div>NIC rx queue</div><i>→</i><div>TCP receive buffer</div></div><div class="broker-layer network"><span>SOCKET SERVER</span><div>Acceptor</div><i>→</i><div>Processor #2</div><i>→</i><div>RequestChannel</div></div><button class="broker-layer handler hotspot" data-detail="brokerpath" type="button"><span>REQUEST HANDLER POOL</span><div>KafkaRequestHandler</div><i>→</i><div>KafkaApis.handleProduceRequest</div></button><div class="broker-layer storage"><span>REPLICA MANAGER</span><div>appendRecords()</div><i>→</i><div>Partition P1 Leader</div></div></div><div class="thread-legend"><span><i class="blue"></i>网络线程：不做磁盘逻辑</span><span><i class="orange"></i>Handler：解析并派发</span><span><i class="green"></i>存储路径</span></div></div>
+            <p class="memory-line"><span>Broker 也分工</span> SocketServer 把网络 I/O 与请求处理解耦，避免慢请求堵住收包。</p>
+          </article>
+
+          <article class="slide" data-title="Topic 到 Segment" data-section="12 · LOGICAL STORAGE" aria-hidden="true">
+            <header class="slide-heading"><span>QUESTION 12</span><h2>Topic、Partition、Segment，到底怎么套？</h2><p>Topic 是逻辑命名；Partition 才是有序日志；Segment 是日志滚动后的文件组。</p></header>
+            <div class="storage-nesting diagram-surface"><button class="storage-layer topic-layer hotspot" data-detail="storage" type="button"><span>TOPIC · orders.created</span><small>逻辑命名空间 · 6 partitions</small><div class="partition-tabs"><i>P0</i><i class="active">P1 · LEADER</i><i>P2</i><i>P3</i><i>P4</i><i>P5</i></div><div class="partition-folder"><span>DIRECTORY · orders.created-1</span><div class="segment-strip"><div class="segment closed"><b>baseOffset 0</b><small>closed segment</small></div><div class="segment closed"><b>baseOffset 20</b><small>closed segment</small></div><div class="segment active"><b>baseOffset 40</b><small>ACTIVE SEGMENT</small><div class="records"><i>40</i><i>41</i><i class="hot">42 · #A1024</i></div></div></div></div></button><div class="nesting-key"><span>1 Topic</span><i>contains</i><span>6 Partitions</span><i>each has</i><span>N Segments</span><i>each has</i><span>Record Batches</span></div></div>
+            <p class="memory-line"><span>层级关系</span> Topic → Partition → Segment → RecordBatch → Record。</p>
+          </article>
+
+          <article class="slide" data-title="变成四类文件" data-section="13 · LOG FILES" aria-hidden="true">
+            <header class="slide-heading"><span>QUESTION 13</span><h2>一个 Segment，为什么不是一个文件？</h2><p>.log 保存真实 RecordBatch；稀疏索引帮助 Broker 少扫一段文件。</p></header>
+            <div class="file-tray diagram-surface"><div class="tray-head"><span>NVMe VOLUME</span><code>/var/lib/kafka/data/orders.created-1/</code><small>ACTIVE SEGMENT · baseOffset 40</small></div><button class="file-module log-file hotspot" data-detail="files" type="button"><i class="file-tab"></i><span>DATA</span><strong>00000000000000000040.log</strong><small>RecordBatch: offsets 40, 41, <b>42</b> …</small><div class="file-blocks"><i></i><i></i><i class="hot"></i><i></i><i></i><i></i></div></button><div class="file-module"><i class="file-tab"></i><span>OFFSET INDEX</span><strong>00000000000000000040.index</strong><small>relative offset → physical position</small></div><div class="file-module"><i class="file-tab"></i><span>TIME INDEX</span><strong>00000000000000000040.timeindex</strong><small>timestamp → relative offset</small></div><div class="file-module"><i class="file-tab"></i><span>TRANSACTION INDEX</span><strong>00000000000000000040.txnindex</strong><small>中止事务范围；无事务时可能为空</small></div><svg class="index-pointer" viewBox="0 0 1000 330" preserveAspectRatio="none" aria-hidden="true"><path d="M660 155 C550 155 510 90 410 90"/><text x="540" y="125">offset 42 → file position（示意）</text></svg></div>
+            <p class="memory-line"><span>不要混淆</span> offset 是日志逻辑位置，file position 是 .log 文件中的字节位置。</p>
+          </article>
+
+          <article class="slide" data-title="先写 Page Cache" data-section="14 · PHYSICAL WRITE" aria-hidden="true">
+            <header class="slide-heading"><span>QUESTION 14</span><h2>“写入 Kafka”就等于写进 NVMe 了吗？</h2><p>通常不是。Broker append 先进入 Linux Page Cache，内核再异步回写存储设备。</p></header>
+            <div class="physical-write diagram-surface"><div class="physical-layer app"><span>JVM · KAFKA LOG</span><div><b>FileRecords.append()</b><small>写入 active .log</small></div></div><i class="physical-arrow">write()</i><button class="physical-layer cache hotspot" data-detail="pagecache" type="button"><span>LINUX PAGE CACHE · RAM</span><div class="pages"><i></i><i></i><i class="dirty"><b>#A1024</b><small>DIRTY PAGE</small></i><i></i><i></i></div><small>文件内容的内存页副本；Consumer 热读也常从这里命中</small></button><i class="physical-arrow delayed">writeback · later</i><div class="physical-layer fs"><span>XFS / EXT4</span><div><b>inode + extent mapping</b><small>文件偏移 → 逻辑块</small></div></div><i class="physical-arrow">block I/O</i><div class="physical-layer nvme"><span>NVMe SSD</span><div class="ssd-board"><i></i><i></i><i></i><i></i><b>controller</b><small>NAND flash</small></div></div><div class="ack-caveat"><b>ACK 提醒</b><span>Kafka 默认不为每条消息 fsync；acks=all 关心 ISR 副本确认，不等于每块盘都已物理落盘。</span></div></div>
+            <p class="memory-line"><span>前半程终点</span> #A1024 获得 offset 42，并存在 P1 Leader 的日志页/文件视图中。</p>
+          </article>
+
+          <article class="slide recap" data-title="用五问验收心智模型" data-section="50 · FINAL CHECK" aria-hidden="true">
+            <header class="slide-heading"><span>FINAL CHECK</span><h2>不背类名，你能回答这五问吗？</h2><p>能从因果关系回答出来，才算真正理解了一条 Kafka 消息。</p></header>
+            <div class="recap-line diagram-surface"><div><i>01</i><span>ROUTING</span><strong>为什么去 P1？</strong><small>Key · Partitioner · Metadata · Leader</small></div><b>→</b><div><i>02</i><span>STORAGE</span><strong>offset 42 在哪？</strong><small>RecordBatch · Segment · Page Cache</small></div><b>→</b><div><i>03</i><span>DURABILITY</span><strong>何时能 ACK？</strong><small>Follower Fetch · ISR · HW · minISR</small></div><b>→</b><div><i>04</i><span>OWNERSHIP</span><strong>谁来消费？</strong><small>Group · Coordinator · Assignment · Rebalance</small></div><b>→</b><div><i>05</i><span>RECOVERY</span><strong>崩溃从哪重来？</strong><small>Position · Commit · Retry · DLQ · Lag</small></div><svg viewBox="0 0 1200 260" preserveAspectRatio="none" aria-hidden="true"><path d="M100 205 H1090"/><circle r="7"><animateMotion dur="4.5s" repeatCount="indefinite" path="M100 205 H1090"/></circle></svg></div>
+            <div class="next-chapter"><span>COURSE COMPLETE</span><strong>#A1024 已从 Java 对象走到业务处理完成，Group 的下一恢复点是 offset 43。</strong><small>遇到任何 Kafka 问题，都先定位它处于“路由、存储、复制、消费、恢复”哪一层。</small></div>
+          </article>
+        </div>
+
+        <footer class="transport" aria-label="幻灯片翻页">
+          <button id="prev" class="pager-control previous" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg><strong>上一页</strong></button>
+          <div class="page-position" aria-live="polite"><strong id="page-count">01 / --</strong><span id="page-title">一条 Event 的完整旅程</span></div>
+          <button id="next" class="pager-control next primary" type="button"><strong>下一页</strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+        </footer>
+      </section>
+    </main>
+
+    <aside id="notes-panel" class="notes-panel" aria-hidden="true" aria-labelledby="notes-title">
+      <header><div><span id="notes-kicker">DEEP DIVE · 当前页面</span><h2 id="notes-title">一条 Event 的完整旅程</h2><small id="notes-stage">当前边界 · 全景</small></div><button id="close-notes" type="button" aria-label="关闭深挖资料"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
+      <div class="notes-scroll">
+        <section class="notes-boundary"><span>本页没有展开的边界</span><p id="notes-boundary"></p></section>
+        <section class="notes-incident"><span>故障推演</span><ol id="notes-failure"></ol></section>
+        <section class="notes-inspection"><span>线上怎么查</span><div id="notes-inspect"></div></section>
+        <section class="notes-quiz"><span>自测题</span><p id="notes-question"></p><details id="notes-answer"><summary>想好后再展开答案</summary><p id="notes-answer-text"></p></details></section>
+        <section class="notes-related"><span>继续学习</span><div id="notes-related"></div><a id="notes-source" href="https://github.com/apache/kafka" target="_blank" rel="noreferrer">查看延伸依据 ↗</a></section>
+      </div>
+    </aside>
+    <button id="notes-scrim" class="notes-scrim" type="button" aria-label="关闭深挖资料" hidden></button>
+    <div id="overview" class="overview" aria-hidden="true"><header><div><span id="overview-count">KAFKA · END-TO-END</span><h2>选择一页继续</h2></div><button id="close-overview" type="button">关闭 <kbd>Esc</kbd></button></header><div id="overview-grid"></div></div>
+    <script src="./course.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>

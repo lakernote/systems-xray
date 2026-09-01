@@ -1,0 +1,89 @@
+<mxGraphModel adaptiveColors="auto" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+  <root>
+    <mxCell id="0"/>
+    <mxCell id="1" parent="0"/>
+    <mxCell id="title" value="Kafka：一条 Event 从 send() 到 Consumer 的真实旅程" style="text;html=1;align=left;verticalAlign=middle;fontSize=26;fontStyle=1;fontColor=#111827;" vertex="1" parent="1">
+      <mxGeometry x="40" y="20" width="1040" height="48" as="geometry"/>
+    </mxCell>
+    <mxCell id="producer-lane" value="PRODUCER JVM" style="swimlane;startSize=30;rounded=1;fillColor=#F4F8FF;strokeColor=#145CC7;strokeWidth=2;fontStyle=1;fontColor=#145CC7;html=1;pointerEvents=0;" vertex="1" parent="1">
+      <mxGeometry x="40" y="90" width="1400" height="180" as="geometry"/>
+    </mxCell>
+    <mxCell id="source" value="&lt;b&gt;业务代码&lt;/b&gt;&lt;br&gt;producer.send(record)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF1DE;strokeColor=#FF8A00;strokeWidth=2;" vertex="1" parent="producer-lane">
+      <mxGeometry x="30" y="68" width="160" height="70" as="geometry"/>
+    </mxCell>
+    <mxCell id="interceptor" value="&lt;b&gt;Interceptor&lt;/b&gt;&lt;br&gt;补充 Headers" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D8EAFE;strokeColor=#145CC7;strokeWidth=2;" vertex="1" parent="producer-lane">
+      <mxGeometry x="220" y="68" width="150" height="70" as="geometry"/>
+    </mxCell>
+    <mxCell id="serializer" value="&lt;b&gt;Serializer&lt;/b&gt;&lt;br&gt;K/V → byte[]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D8EAFE;strokeColor=#145CC7;strokeWidth=2;" vertex="1" parent="producer-lane">
+      <mxGeometry x="410" y="68" width="150" height="70" as="geometry"/>
+    </mxCell>
+    <mxCell id="partitioner" value="&lt;b&gt;Partitioner&lt;/b&gt;&lt;br&gt;key → P1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D8EAFE;strokeColor=#145CC7;strokeWidth=2;" vertex="1" parent="producer-lane">
+      <mxGeometry x="600" y="68" width="150" height="70" as="geometry"/>
+    </mxCell>
+    <mxCell id="accumulator" value="&lt;b&gt;RecordAccumulator&lt;/b&gt;&lt;br&gt;Batch + zstd" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D8EAFE;strokeColor=#145CC7;strokeWidth=2;" vertex="1" parent="producer-lane">
+      <mxGeometry x="790" y="68" width="170" height="70" as="geometry"/>
+    </mxCell>
+    <mxCell id="sender" value="&lt;b&gt;Sender&lt;/b&gt;&lt;br&gt;ProduceRequest" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D8EAFE;strokeColor=#145CC7;strokeWidth=2;" vertex="1" parent="producer-lane">
+      <mxGeometry x="1000" y="68" width="150" height="70" as="geometry"/>
+    </mxCell>
+    <mxCell id="network-client" value="&lt;b&gt;NetworkClient&lt;/b&gt;&lt;br&gt;Kafka Protocol" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D8EAFE;strokeColor=#145CC7;strokeWidth=2;" vertex="1" parent="producer-lane">
+      <mxGeometry x="1190" y="68" width="170" height="70" as="geometry"/>
+    </mxCell>
+    <mxCell id="broker-lane" value="KAFKA CLUSTER · orders.created / P1" style="swimlane;startSize=30;rounded=1;fillColor=#F2FFF7;strokeColor=#18A957;strokeWidth=2;fontStyle=1;fontColor=#118244;html=1;pointerEvents=0;" vertex="1" parent="1">
+      <mxGeometry x="40" y="300" width="1400" height="260" as="geometry"/>
+    </mxCell>
+    <mxCell id="socket" value="&lt;b&gt;SocketServer&lt;/b&gt;&lt;br&gt;Network Thread" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DDFBE8;strokeColor=#18A957;strokeWidth=2;" vertex="1" parent="broker-lane">
+      <mxGeometry x="1190" y="58" width="170" height="70" as="geometry"/>
+    </mxCell>
+    <mxCell id="request-handler" value="&lt;b&gt;Request Handler&lt;/b&gt;&lt;br&gt;KafkaApis" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DDFBE8;strokeColor=#18A957;strokeWidth=2;" vertex="1" parent="broker-lane">
+      <mxGeometry x="980" y="58" width="170" height="70" as="geometry"/>
+    </mxCell>
+    <mxCell id="leader" value="&lt;b&gt;P1 Leader · B2&lt;/b&gt;&lt;br&gt;offset = 42" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DDFBE8;strokeColor=#18A957;strokeWidth=3;" vertex="1" parent="broker-lane">
+      <mxGeometry x="760" y="58" width="170" height="70" as="geometry"/>
+    </mxCell>
+    <mxCell id="page-cache" value="&lt;b&gt;Page Cache&lt;/b&gt;&lt;br&gt;顺序追加" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#A7E8E0;strokeColor=#111111;strokeWidth=2;" vertex="1" parent="broker-lane">
+      <mxGeometry x="550" y="58" width="170" height="70" as="geometry"/>
+    </mxCell>
+    <mxCell id="log-segment" value="&lt;b&gt;Log Segment&lt;/b&gt;&lt;br&gt;.log / .index" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#A7E8E0;strokeColor=#111111;strokeWidth=2;" vertex="1" parent="broker-lane">
+      <mxGeometry x="340" y="48" width="170" height="90" as="geometry"/>
+    </mxCell>
+    <mxCell id="follower-b1" value="&lt;b&gt;B1 · P1 Follower&lt;/b&gt;&lt;br&gt;LEO 43" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8D3FF;strokeColor=#7D3CD8;strokeWidth=2;" vertex="1" parent="broker-lane">
+      <mxGeometry x="690" y="158" width="180" height="64" as="geometry"/>
+    </mxCell>
+    <mxCell id="follower-b3" value="&lt;b&gt;B3 · P1 Follower&lt;/b&gt;&lt;br&gt;LEO 43" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8D3FF;strokeColor=#7D3CD8;strokeWidth=2;" vertex="1" parent="broker-lane">
+      <mxGeometry x="900" y="158" width="180" height="64" as="geometry"/>
+    </mxCell>
+    <mxCell id="consumer-lane" value="CONSUMER GROUP · order-risk-service" style="swimlane;startSize=30;rounded=1;fillColor=#FFFDF0;strokeColor=#7A8700;strokeWidth=2;fontStyle=1;fontColor=#606B00;html=1;pointerEvents=0;" vertex="1" parent="1">
+      <mxGeometry x="40" y="590" width="1400" height="180" as="geometry"/>
+    </mxCell>
+    <mxCell id="fetcher" value="&lt;b&gt;Fetcher · C2&lt;/b&gt;&lt;br&gt;fetch offset 42" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F7FFC2;strokeColor=#7A8700;strokeWidth=2;" vertex="1" parent="consumer-lane">
+      <mxGeometry x="330" y="68" width="180" height="70" as="geometry"/>
+    </mxCell>
+    <mxCell id="deserializer" value="&lt;b&gt;Deserializer&lt;/b&gt;&lt;br&gt;byte[] → K/V" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F7FFC2;strokeColor=#7A8700;strokeWidth=2;" vertex="1" parent="consumer-lane">
+      <mxGeometry x="560" y="68" width="180" height="70" as="geometry"/>
+    </mxCell>
+    <mxCell id="business-handler" value="&lt;b&gt;业务处理&lt;/b&gt;&lt;br&gt;riskService.evaluate" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F7FFC2;strokeColor=#7A8700;strokeWidth=2;" vertex="1" parent="consumer-lane">
+      <mxGeometry x="790" y="68" width="190" height="70" as="geometry"/>
+    </mxCell>
+    <mxCell id="offset-commit" value="&lt;b&gt;Offset Commit&lt;/b&gt;&lt;br&gt;提交 43" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F7FFC2;strokeColor=#7A8700;strokeWidth=2;" vertex="1" parent="consumer-lane">
+      <mxGeometry x="1030" y="68" width="180" height="70" as="geometry"/>
+    </mxCell>
+    <mxCell id="e1" edge="1" parent="1" source="source" target="interceptor" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#111111;"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <mxCell id="e2" edge="1" parent="1" source="interceptor" target="serializer" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#111111;"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <mxCell id="e3" edge="1" parent="1" source="serializer" target="partitioner" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#111111;"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <mxCell id="e4" edge="1" parent="1" source="partitioner" target="accumulator" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#111111;"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <mxCell id="e5" edge="1" parent="1" source="accumulator" target="sender" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#111111;"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <mxCell id="e6" edge="1" parent="1" source="sender" target="network-client" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#111111;"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <mxCell id="e7" value="TCP / TLS" edge="1" parent="1" source="network-client" target="socket" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#111111;"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <mxCell id="e8" edge="1" parent="1" source="socket" target="request-handler" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#111111;"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <mxCell id="e9" edge="1" parent="1" source="request-handler" target="leader" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#111111;"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <mxCell id="e10" edge="1" parent="1" source="leader" target="page-cache" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#111111;"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <mxCell id="e11" edge="1" parent="1" source="page-cache" target="log-segment" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#111111;"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <mxCell id="e12" value="Follower Fetch" edge="1" parent="1" source="leader" target="follower-b1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#7D3CD8;"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <mxCell id="e13" value="Follower Fetch" edge="1" parent="1" source="leader" target="follower-b3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#7D3CD8;"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <mxCell id="e14" value="Fetch offset 42" edge="1" parent="1" source="log-segment" target="fetcher" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#111111;"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <mxCell id="e15" edge="1" parent="1" source="fetcher" target="deserializer" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#111111;"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <mxCell id="e16" edge="1" parent="1" source="deserializer" target="business-handler" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#111111;"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <mxCell id="e17" edge="1" parent="1" source="business-handler" target="offset-commit" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#111111;"><mxGeometry relative="1" as="geometry"/></mxCell>
+  </root>
+</mxGraphModel>
