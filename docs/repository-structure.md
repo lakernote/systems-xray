@@ -43,6 +43,7 @@
 - `course-authoring.md`：所有课程共同遵守的编写规范。
 - `repository-structure.md`：目录和文件职责。
 - `kafka-content-review.md`：Kafka 逐页技术审查。
+- `kafka-learning-review.md`：Kafka 外部课程对照、教学方法与改造记录。
 - `diagrams/`：可编辑的原理图源文件。
 
 ## 项目 Skill

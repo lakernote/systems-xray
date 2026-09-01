@@ -440,6 +440,30 @@ button.atlas-consumer { width: 100%; }
 .lesson-board.is-compare .lesson-path::before { background: repeating-linear-gradient(90deg,var(--line-strong) 0 8px,transparent 8px 14px); box-shadow: none; }
 .lesson-board.is-compare .lesson-node.is-hot { border-color: var(--green); background: var(--green-soft); }
 .lesson-board.is-compare .lesson-node.is-hot > span { color: var(--green); }
+.lesson-board.is-scenario { background: linear-gradient(180deg, rgba(233,240,255,.46), rgba(238,241,244,.78)); }
+.lesson-board.is-scenario .lesson-path::before { height: 3px; background: linear-gradient(90deg, var(--blue), var(--orange) 52%, var(--green)); }
+.lesson-board.is-scenario .lesson-path::after { content: "#A1024"; position: absolute; z-index: 4; top: calc(50% + 1px); left: 4%; padding: 4px 7px; border-radius: 99px; background: var(--navy); color: #fff; box-shadow: 0 4px 12px rgba(22,32,51,.2); font: 800 7px var(--mono); animation: lessonTokenTravel 5.2s ease-in-out infinite; pointer-events: none; }
+.lesson-board.is-scenario .lesson-node:first-child { border-color: rgba(40,100,200,.7); background: rgba(233,240,255,.72); }
+.lesson-board.is-scenario .lesson-node:last-child { border-color: rgba(33,134,107,.7); background: rgba(229,244,237,.8); }
+.lesson-board.is-timeline { background-color: #f4f1ea; background-image: linear-gradient(rgba(111,126,147,.065) 1px, transparent 1px), linear-gradient(90deg, rgba(111,126,147,.065) 1px, transparent 1px); background-size: 28px 28px; }
+.lesson-board.is-timeline .lesson-path { gap: 18px; }
+.lesson-board.is-timeline .lesson-path::before { height: 1px; background: repeating-linear-gradient(90deg, var(--orange) 0 12px, transparent 12px 18px); }
+.lesson-board.is-timeline .lesson-node { border-top: 4px solid var(--line-strong); background: rgba(255,255,255,.92); }
+.lesson-board.is-timeline .lesson-node:nth-child(2), .lesson-board.is-timeline .lesson-node:nth-child(3) { border-top-color: var(--orange); }
+.lesson-board.is-timeline .lesson-node:last-child { border-top-color: var(--green); }
+.lesson-board.is-control { border-color: rgba(40,100,200,.55); background: rgba(233,240,255,.54); }
+.lesson-board.is-control::before { color: var(--blue); }
+.lesson-board.is-control .lesson-path::before { background: repeating-linear-gradient(90deg, var(--blue) 0 8px, transparent 8px 13px); }
+.lesson-board.is-control .lesson-node { border-color: rgba(40,100,200,.58); }
+.lesson-board.is-control .lesson-node::before { background: var(--blue); }
+.lesson-board.is-control .lesson-node.is-hot { border-color: var(--orange); background: var(--orange-soft); }
+.lesson-board.is-equation { background: linear-gradient(180deg, rgba(255,255,255,.85), rgba(240,235,224,.72)); }
+.lesson-board.is-equation .lesson-path { gap: 22px; }
+.lesson-board.is-equation .lesson-path::before { height: 3px; background: linear-gradient(90deg, var(--green) 0 23%, var(--blue) 23% 48%, var(--orange) 48% 100%); }
+.lesson-board.is-equation .lesson-node { min-height: 142px; border-width: 0 0 4px; border-color: var(--line-strong); box-shadow: 0 10px 24px rgba(22,32,51,.08); }
+.lesson-board.is-equation .lesson-node:nth-child(1) { border-color: var(--green); }
+.lesson-board.is-equation .lesson-node:nth-child(2) { border-color: var(--blue); }
+.lesson-board.is-equation .lesson-node:nth-child(3), .lesson-board.is-equation .lesson-node:nth-child(4) { border-color: var(--orange); }
 .lesson-board.is-blueprint { grid-template-columns: minmax(0, 1.2fr) minmax(250px, .8fr); grid-template-rows: minmax(0, 1fr) auto; gap: 12px; background-color: #e3e8ef; background-image: linear-gradient(rgba(111,126,147,.09) 1px, transparent 1px), linear-gradient(90deg, rgba(111,126,147,.09) 1px, transparent 1px), linear-gradient(180deg, rgba(255,255,255,.5), rgba(216,223,232,.72)); background-size: 28px 28px, 28px 28px, 100% 100%; }
 .lesson-board.is-blueprint .lesson-path { grid-column: 1; grid-row: 1; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 8px; padding-top: 28px; }
 .lesson-board.is-blueprint .lesson-path::before { left: 10%; right: 10%; top: calc(50% + 14px); background: repeating-linear-gradient(90deg, var(--orange) 0 9px, transparent 9px 14px); box-shadow: 0 0 0 4px rgba(255,122,26,.055); }
@@ -516,6 +540,7 @@ button.atlas-consumer { width: 100%; }
 @keyframes parcelFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
 @keyframes cablePulse { 0% { opacity: .25; transform: translateX(-6px); } 50% { opacity: 1; } 100% { opacity: .25; transform: translateX(6px); } }
 @keyframes topologyTravel { from { left: 0; transform: translateX(0); } to { left: 100%; transform: translateX(-100%); } }
+@keyframes lessonTokenTravel { 0%, 10% { left: 4%; } 30% { left: 29%; } 52% { left: 54%; } 74%, 100% { left: calc(96% - 48px); } }
 
 @media (max-width: 1120px) {
   .course-bar { grid-template-columns: auto minmax(180px,1fr) auto; gap: 12px; }

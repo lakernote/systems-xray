@@ -10,7 +10,7 @@ Systems X-Ray 是一组面向生产开发者的交互式 Web 课件。每门课�
 
 | 课程 | 追踪对象 | 主线 | 页数 |
 |---|---|---|---:|
-| [Kafka](./kafka/) | `Event #A1024` | Produce → Append → Fetch → Commit | 66 |
+| [Kafka](./kafka/) | `Event #A1024` | Produce → Append → Fetch → Commit | 77 |
 | [OpenSearch](./opensearch/) | `Document #D2048` | CRUD → Lucene → Search → Vector | 55 |
 | [Redis](./redis/) | `Key session:user:9527` | CRUD → Dict → Persistence → Cluster | 55 |
 | [PostgreSQL](./postgresql/) | `Row orders.id=A1024` | CRUD → Planner → MVCC → WAL | 65 |
@@ -48,7 +48,7 @@ systems-xray/
 └── archive/                   # 不参与当前课程入口的历史实验
 ```
 
-详细约定见 [仓库结构说明](./docs/repository-structure.md)。Kafka 的逐页技术审查记录见 [Kafka 内容审查](./docs/kafka-content-review.md)。
+详细约定见 [仓库结构说明](./docs/repository-structure.md)。Kafka 的技术审查见 [Kafka 内容审查](./docs/kafka-content-review.md)，外部课程对照与本轮教学改造见 [Kafka 学习与改造记录](./docs/kafka-learning-review.md)。
 
 ## 本地预览
 

@@ -9,7 +9,11 @@
     distribution: "https://kafka.apache.org/41/implementation/distribution/",
     rebalance: "https://kafka.apache.org/41/operations/consumer-rebalance-protocol/",
     consumerApi: "https://kafka.apache.org/41/javadoc/org/apache/kafka/clients/consumer/KafkaConsumer.html",
-    broker: "https://kafka.apache.org/41/configuration/broker-configs/"
+    broker: "https://kafka.apache.org/41/configuration/broker-configs/",
+    topic: "https://kafka.apache.org/41/configuration/topic-configs/",
+    kraft: "https://kafka.apache.org/41/getting-started/zk2kraft/",
+    delayedProduce: "https://github.com/apache/kafka/blob/trunk/core/src/main/scala/kafka/server/ReplicaManager.scala",
+    consumerThreads: "https://kafka.apache.org/41/javadoc/org/apache/kafka/clients/consumer/KafkaConsumer.html#multithreaded-processing"
   };
 
   const page = (after, chapter, section, title, question, intro, nodes, facts, takeaway, note, mode = "flow") => ({
@@ -17,6 +21,17 @@
   });
 
   window.SYSTEMS_XRAY_ADVANCED_SLIDES = [
+    page("00 · OPENING", "WHY KAFKA · 业务冲突", "00A · WHY A LOG", "先看问题，再学机制", "订单服务为什么不直接同步调用三个下游？", "直接调用在低流量时很直观；当下游变慢、临时故障或需要重放时，耦合会沿调用链放大。Kafka 用可重放日志把“写入事件”和“各自处理”解耦。", [
+      ["DIRECT CALL", "库存慢 2s", "订单线程一起等待"],
+      ["PARTIAL FAILURE", "积分成功 · 通知失败", "结果被撕成三份"],
+      ["APPEND ONCE", "orders.created", "先记录不可变事实"],
+      ["INDEPENDENT READ", "库存 · 积分 · 通知", "各 Group 独立重试/重放"]
+    ], [["Kafka 得到", "削峰、解耦、广播、重放"], ["Kafka 不自动得到", "业务 Exactly-once 与跨库事务"], ["核心代价", "最终一致性、重复处理、运维复杂度"]], "Kafka 不是让失败消失，而是把失败变成可重试、可定位、可重放的状态。", {
+      summary: "同步调用把下游延迟、可用性和发布节奏直接传回主业务。Kafka 先把业务事实追加到持久日志，再让多个 Consumer Group 按自己的速度处理；代价是系统必须接受异步边界并设计幂等、积压和一致性。",
+      config: [["业务事实", "OrderCreated #A1024"], ["Topic", "orders.created"], ["消费组", "inventory / points / notify"], ["恢复方式", "committed offset + replay"]],
+      gain: "下游可独立扩缩容、失败重试和重放，主业务不再同步等待所有处理完成。", cost: "跨系统结果变为最终一致；重复、乱序边界与积压必须显式治理。", code: "dbTx { save(order); insertOutbox(#A1024) }\npublisher.retry(outboxRow) → Kafka\neach Group replays from its own committed offset", source: DOCS.design
+    }, "scenario"),
+
     page("04 · INTERCEPTOR", "PRODUCER · 路由准备", "04A · METADATA BOOTSTRAP", "先认识集群，再发送", "Producer 怎么知道集群里有哪些 Broker？", "bootstrap.servers 只是入口；真正的 Topic、Partition 与 Leader 路由来自 Metadata。", [
       ["BOOTSTRAP", "broker0:9092", "连接任意可用入口"],
       ["REQUEST", "MetadataRequest", "询问 Topic 与 Leader"],
@@ -149,16 +164,38 @@
       gain: "Retention 与 Compaction 可以按 Segment 管理，不必重写整条 Partition。", cost: "过小会制造海量文件，过大又让清理和恢复粒度太粗。", code: "active segment 40.*\n → roll condition\n → close 40.*\n → create 43.log/index/timeindex/txnindex", source: DOCS.design
     }),
 
-    page("13 · LOG FILES", "STORAGE LIFECYCLE · 清理", "13C · RETENTION & COMPACTION", "Kafka 删除的是旧 Segment", "消息过期时，会从文件中挖掉一条记录吗？", "这是存储生命周期旁支：Retention 按旧 Segment 删除，Compaction 则重写已关闭的 Segment。", [
-      ["DELETE POLICY", "retention.ms / bytes", "整段旧 Segment 删除"],
-      ["COMPACT POLICY", "latest value per key", "后台 Cleaner 重写"],
-      ["TOMBSTONE", "key + null value", "表示删除 Key"],
-      ["ACTIVE SEGMENT", "not cleaned now", "继续接收新记录"]
-    ], [["cleanup.policy", "delete / compact / delete,compact"], ["注意", "Retention 不看 Consumer 是否读完"], ["恢复风险", "Lag 超过保留期会丢历史"]], "Kafka 保留由时间/空间策略决定，不由消费确认决定。", {
-      summary: "delete 策略按时间或空间删除旧 Segment；compact 策略后台重写旧段，只保证最终保留每个 Key 的最新值，顺序与 offset 仍保持但会出现空洞。",
-      config: [["cleanup.policy", "delete / compact"], ["retention.ms", "时间保留"], ["retention.bytes", "Partition 空间上限"], ["delete.retention.ms", "tombstone 保留窗口"]],
-      gain: "能同时支持事件历史和状态快照型 Topic。", cost: "清理异步且按 Segment；Consumer 落后过久可能越过可读历史。", code: "closed segments\n → retention delete\n or log cleaner compact by key\nactive segment remains append-only", source: DOCS.design
-    }, "compare"),
+    page("13 · LOG FILES", "STORAGE LIFECYCLE · 保留", "13C · TIME RETENTION", "过期不是删一条，而是删一段", "offset 42 过期时，Kafka 会在 .log 中挖掉它吗？", "不会。delete 策略只把满足时间或空间条件的旧关闭 Segment 整组移出日志；Active Segment 仍继续追加。", [
+      ["BEFORE", "0.log · 20.log · 40.log", "40.log 是 Active"],
+      ["TRIGGER", "retention.ms / bytes", "检查旧 Segment"],
+      ["DELETE", "0.log + indexes", "整组文件删除"],
+      ["AFTER", "20.log · 40.log", "log start offset 前移"]
+    ], [["判断粒度", "关闭的 Segment"], ["不关心", "Consumer 是否已经读完"], ["故障表现", "旧 Commit 越界后触发 auto.offset.reset"]], "Retention 是 Topic 的存储 SLA，不是 Consumer 的 ACK。", {
+      summary: "cleanup.policy=delete 时，Kafka 根据 retention.ms 或 retention.bytes 选择旧的关闭 Segment 删除；不是逐条擦除，也不会等待 Consumer Group。Segment 太大时，过期数据也要等到滚段后才能按文件回收。",
+      config: [["cleanup.policy", "delete"], ["retention.ms", "604800000（默认 7 天）"], ["retention.bytes", "每 Partition 上限"], ["segment.ms/bytes", "决定回收粒度"]],
+      gain: "以文件为单位回收，避免随机改写大日志。", cost: "落后超过保留窗口的 Consumer 会失去历史恢复点；大 Segment 让回收更粗。", code: "for closedSegment in log:\n  if expiredByTimeOrSize(segment):\n    remove .log/.index/.timeindex/.txnindex\nlogStartOffset = firstRemainingOffset", source: DOCS.topic
+    }, "timeline"),
+
+    page("13 · LOG FILES", "KAFKA CRUD · 更新", "13D · COMPACT UPDATE", "Kafka 的 Update 是再追加一个新版本", "同一个 user-9527 改了三次状态，日志里会马上只剩最后一条吗？", "不会。Producer 仍然 append；相同 Key 的旧版本暂时共存。后台 Log Cleaner 只在关闭 Segment 上保留最新值。", [
+      ["APPEND V1", "user-9527 → CREATED", "offset 12"],
+      ["APPEND V2", "user-9527 → PAID", "offset 42"],
+      ["DIRTY LOG", "V1 与 V2 都在", "Consumer 可能已看过两次"],
+      ["COMPACT LATER", "保留 V2", "offset 42 不改变"]
+    ], [["前提", "cleanup.policy=compact 且 Key 非 null"], ["Cleaner", "建立 key → latest offset 摘要"], ["保证", "不重排、不修改幸存 Record 的 offset"]], "Compact Topic 的更新语义是“追加新状态，后台丢弃旧状态”，不是原地覆盖。", {
+      summary: "Log compaction 把同一 Key 的多次写入视为状态演进。Cleaner 扫描可清理的关闭 Segment，按 Key 找到最新 Offset，重写 Segment 时跳过已有更新版本的旧记录。Active head 仍包含所有最新写入。",
+      config: [["cleanup.policy", "compact"], ["min.cleanable.dirty.ratio", "何时值得清理"], ["min.compaction.lag.ms", "最短保留新记录时间"], ["max.compaction.lag.ms", "最长可清理等待目标"]],
+      gain: "保留每个 Key 的最终状态，同时仍允许实时消费者看到完整更新流。", cost: "清理异步、会消耗磁盘 I/O；offset 会出现空洞，不能把它当连续条数。", code: "append(key, V1) @12\nappend(key, V2) @42\n\nlatest[key] = 42\nclean(segment): keep record only if offset == latest[key]", source: DOCS.design
+    }, "timeline"),
+
+    page("13 · LOG FILES", "KAFKA CRUD · 删除", "13E · TOMBSTONE DELETE", "Kafka 的 Delete 是一条 value=null 的记录", "Tombstone 写入后，旧值什么时候真正消失？", "先追加删除标记，让在线和追赶中的 Consumer 都能看到删除；Cleaner 之后移除旧值，过了保留窗口再移除 Tombstone 本身。", [
+      ["STATE", "user-9527 → PAID", "旧值仍在 Segment"],
+      ["DELETE", "user-9527 → null", "Tombstone @57"],
+      ["CLEAN 1", "旧值被跳过", "保留 Tombstone"],
+      ["CLEAN 2", "Tombstone 过窗后移除", "Key 最终不存在"]
+    ], [["必须有", "非 null Key + null Value"], ["窗口", "delete.retention.ms"], ["慢 Consumer 风险", "落后过久可能错过删除标记"]], "Tombstone 先传播删除事实，再由 Cleaner 延迟回收删除证据。", {
+      summary: "在 compacted topic 中，Key 非空且 Value 为 null 的 Record 是 Tombstone。它先让重放者删除本地状态；Cleaner 清理旧值后仍保留 Tombstone 一段 delete.retention.ms，之后 Tombstone 自己也可被清理。",
+      config: [["cleanup.policy", "compact"], ["delete.retention.ms", "默认 24 小时"], ["Key", "必须稳定且非 null"], ["Consumer SLA", "重放要在 Tombstone 窗口内追上"]],
+      gain: "删除也成为可订阅、可重放的日志事件。", cost: "删除不是即时物理擦除；过慢的全量重放 Consumer 可能错过 Tombstone。", code: "append(key=user-9527, value=null) // tombstone\ncleaner removes older values\nafter delete.retention.ms:\n  tombstone may also be removed", source: DOCS.design
+    }, "timeline"),
 
     page("14 · PHYSICAL WRITE", "STORAGE · 故障", "14A · STORAGE FAILURE", "磁盘路径也会成为瓶颈", "Broker 磁盘满或 Page Cache 压力大时，会发生什么？", "Kafka 顺序 I/O 很高效，但容量、文件系统与缓存压力仍会直接影响追加和 Fetch。", [
       ["DISK FULL", "ENOSPC", "Leader append 失败"],
@@ -182,13 +219,13 @@
       gain: "Follower 控制自己的抓取节奏，复制路径与普通 Fetch 机制复用。", cost: "慢盘或网络抖动会造成副本落后并缩小 ISR。", code: "Follower LEO\n → FetchRequest to Leader\n → append returned batches\n → report new fetch offset", source: DOCS.distribution
     }),
 
-    page("14 · PHYSICAL WRITE", "REPLICATION · 可见性", "17 · ISR LEO HW", "LEO、ISR、HW 一次讲清", "Leader 有 offset 42，Consumer 就能读了吗？", "LEO 是各副本末端；ISR 是及时追赶的副本集合；HW 是当前 ISR 的复制边界；满足 minISR 后，普通读取才会看到提交范围。", [
+    page("14 · PHYSICAL WRITE", "REPLICATION · 可见性", "17 · ISR LEO HW", "LEO、ISR、HW 一次讲清", "Leader 有 offset 42，Consumer 就能读了吗？", "LEO 是各副本末端；ISR 是及时追赶的副本集合；HW 是普通 Consumer 的复制可见边界。minISR 约束 acks=all 写入，不是读取开关。", [
       ["B1 LEADER", "LEO 43", "已含 0..42"],
       ["B0 FOLLOWER", "LEO 43", "已追上"],
       ["B2 FOLLOWER", "LEO 41", "仍落后"],
       ["HIGH WATERMARK", "HW 41 → 43", "ISR 追上后推进"]
-    ], [["LEO", "下一条将写入的 offset"], ["HW", "当前 ISR 的复制边界"], ["可见前提", "ISR 数量 ≥ minISR"]], "写到 Leader 只是 append；复制到当前 ISR 且 ISR 数量达标后，记录才进入普通可见范围。", {
-      summary: "每个副本有自己的 LEO。Leader 维护 ISR，并以当前 ISR 中最低复制进度推进 High Watermark。Kafka 4.1 的普通可见性还要求当前 ISR 数量不低于 min.insync.replicas。",
+    ], [["LEO", "下一条将写入的 offset"], ["HW", "普通读取不越过的边界"], ["minISR", "只约束 acks=all 的写入接纳"]], "写到 Leader 只是本地 append；HW 推过这条记录后，普通 Consumer 才会看到它。", {
+      summary: "每个副本有自己的 LEO。Leader 维护 ISR，并根据同步副本进度推进 High Watermark；普通 Consumer 不读取 HW 之后的记录。min.insync.replicas 是 acks=all 的 Produce 接纳条件，不是 Consumer 读取 HW 的附加条件。",
       config: [["LEO", "log end offset"], ["HW", "high watermark"], ["ISR", "in-sync replicas"], ["replica.lag.time.max.ms", "ISR 资格的重要阈值"]],
       gain: "HW 给读取提供只包含同步副本数据的稳定边界。", cost: "慢副本会限制 HW 推进或被移出 ISR，影响延迟与容错。", code: "Leader LEO = 43\nFollower LEOs = 43, 41\nHW = min(ISR replicated offsets)\nthen advances when followers catch up", source: DOCS.distribution
     }),
@@ -214,6 +251,17 @@
       config: [["replication.factor", "3"], ["min.insync.replicas", "2"], ["acks", "all"], ["unclean.leader.election.enable", "通常 false"], ["Kafka 4.1 ELR", "启用时需按 ELR 语义复核"]],
       gain: "防止只剩单副本时继续确认、随后又丢失唯一副本。", cost: "ISR 健康不足时牺牲写可用性，业务必须处理重试或降级。", code: "if acks=all && ISR.size < minISR\n  reject produce\nelse\n  wait for commit condition", source: DOCS.broker
     }),
+
+    page("14 · PHYSICAL WRITE", "BROKER · 延迟操作", "19A · DELAYED PRODUCE", "等副本时，Handler 不会原地傻等", "acks=all 可能等几十毫秒，为什么不会占死所有请求处理线程？", "Leader 先完成本地 append；若副本条件尚未满足，就把 Produce 注册成 DelayedProduce，Handler 释放出来继续处理别的请求。", [
+      ["APPEND", "P1 local LEO 40→43", "Handler 完成本地写"],
+      ["WATCH", "requiredOffset=43", "进入 Produce Purgatory"],
+      ["WAKE", "Follower Fetch 推进 HW", "按 TopicPartition 检查条件"],
+      ["COMPLETE", "ACK or timeout", "回调组装 ProduceResponse"]
+    ], [["等待条件", "当前 ISR 都达到 requiredOffset"], ["超时", "ProduceRequest timeout"], ["核心实现", "DelayedOperationPurgatory + SystemTimer"]], "Purgatory 不是“慢队列”，而是把等待条件从 Handler 线程中剥离。", {
+      summary: "ReplicaManager 本地追加后判断请求是否需要等待副本。如果需要，会创建 DelayedProduce 并按 TopicPartition 注册；Follower Fetch 让 HW/复制进度变化时触发 checkAndComplete，超时也会完成请求。请求 Handler 不在等待期间阻塞。",
+      config: [["acks", "all 才通常需要等待副本"], ["request.timeout.ms", "客户端等待响应上限"], ["producer purgatory", "条件等待集合"], ["watch key", "TopicPartition"]],
+      gain: "少量 Handler 能同时承载大量正在等待复制的请求。", cost: "远端等待仍会体现在 request latency；Purgatory 数量持续升高通常说明副本或磁盘变慢。", code: "appendLocal(batch)\nif !replicasReached(offset):\n  purgatory.watch(tp, request) // Handler returns\nfollowerProgress(tp) → checkAndComplete(tp)", source: DOCS.delayedProduce
+    }, "scenario"),
 
     page("14 · PHYSICAL WRITE", "PRODUCER · 响应", "20 · PRODUCE RESPONSE", "成功最终回到 Callback", "send 返回的 Future 什么时候才算完成？", "Broker 返回每个 Partition 的错误与 baseOffset；Sender 完成批次并调用 Callback。", [
       ["BROKER", "ProduceResponse", "P1 baseOffset=40"],
@@ -259,16 +307,49 @@
       gain: "多数节点故障可由客户端自动恢复，无需业务改路由。", cost: "换主产生短暂停顿；允许 unclean election 可能丢失尚未复制的数据。", code: "leader failure\n → controller elects ISR replica\n → leader epoch increments\n → clients refresh metadata", source: DOCS.distribution
     }),
 
-    page("14 · PHYSICAL WRITE", "TRANSACTION · 可见性", "24 · TRANSACTIONS & LSO", "事务消息何时对 Consumer 可见", "跨 Partition 写入怎样原子提交？", "Transactional Producer 写数据和事务标记；read_committed Consumer 只读到 LSO，跳过 aborted records。", [
+    page("14 · PHYSICAL WRITE", "KRAFT · 控制面", "23A · METADATA LOG", "新 Leader 不是客户端猜出来的", "Broker 1 挂了以后，整个集群怎样对 P1 的新 Leader 达成同一个答案？", "数据面由 Broker 存消息；控制面由 KRaft Controller Quorum 复制 Metadata Log。Controller Leader 决定 P1 新 Leader，并把新 Epoch 发布给 Broker。", [
+      ["DETECT", "B1 fenced / unavailable", "控制面发现旧 Leader 不可用"],
+      ["DECIDE", "Controller Leader", "从安全副本集合选 B0"],
+      ["COMMIT META", "P1 leader=B0 · epoch=8", "写入 Metadata Log 多数确认"],
+      ["PROPAGATE", "Brokers + clients refresh", "数据请求改走 B0"]
+    ], [["三种角色", "Controller 管元数据；Broker 管数据；Client 直连 Leader"], ["生产建议", "独立 3/5 个 Controller voter"], ["不是", "每条消息都经过 Controller"]], "控制面只改变“谁负责这条数据路径”；真正的 Produce/Fetch 仍由客户端直达 Broker。", {
+      summary: "Kafka 4.x 的 KRaft 模式用 Controller Quorum 的 Metadata Log 保存 Topic、Partition、Replica、Leader 与配置等集群元数据。Controller Leader 产生变更，Quorum 提交后传播给 Broker；客户端随后通过 MetadataResponse 学到新 Leader。",
+      config: [["process.roles", "broker / controller"], ["controller.quorum.voters", "生产常用 3 或 5 voter"], ["metadata.log.dir", "Controller 元数据日志目录"], ["Leader Epoch", "隔离旧 Leader"]],
+      gain: "控制面变更有单一顺序和复制日志，Broker 可快速获得一致的元数据视图。", cost: "Controller Quorum 失去多数会阻止元数据变更；它与数据副本是两套不同的复制问题。", code: "controller detects B1 failure\nnewLeader = elect(P1, safeReplicas)\nmetadataLog.append(P1 → B0, epoch=8)\nquorum.commit()\nbrokers.publishMetadata()\nclients.refreshMetadata()", source: DOCS.kraft
+    }, "control"),
+
+    page("14 · PHYSICAL WRITE", "TRANSACTION · 协调", "24 · TRANSACTION PROTOCOL", "事务不是给每条消息加一个 boolean", "跨 Partition 写入怎样一起 Commit 或一起 Abort？", "Transaction Coordinator 先记录事务涉及哪些 Partition；数据仍由各 Partition Leader 正常追加，最后 Coordinator 再让这些 Leader 写 Commit/Abort Marker。", [
       ["BEGIN", "transactional.id", "初始化并取得 Producer Epoch"],
-      ["WRITE", "P1 + P3 batches", "记录带 transactional flag"],
-      ["MARKERS", "COMMIT / ABORT", "写入相关 Partition"],
-      ["READ", "LSO + txnindex", "read_committed 过滤未提交/中止"]
-    ], [["LSO", "首个未完成事务之前"], ["HW", "复制可见边界"], ["read_committed", "可见上界是 LSO（不超过 HW）"]], "事务解决 Kafka 内多 Partition 原子性；不是任意外部系统的分布式事务。", {
-      summary: "事务 Producer 用 transactional.id 与 Coordinator 管理多个 Partition 的原子提交。read_committed Consumer 受 Last Stable Offset 限制，并借助 transaction index 跳过 aborted batches。",
-      config: [["transactional.id", "稳定且实例唯一"], ["enable.idempotence", "事务自动要求"], ["isolation.level", "read_committed"], ["transaction.timeout.ms", "事务超时"]],
-      gain: "可实现 Kafka→Kafka 的原子写与 exactly-once stream processing。", cost: "增加协调、状态与可见性延迟；外部数据库仍需 outbox/幂等等模式。", code: "beginTransaction\n → produce to P1/P3\n → commit markers\nread_committed: read only stable, non-aborted data", source: DOCS.design
-    }),
+      ["REGISTER", "P1 + P3", "状态写入 __transaction_state"],
+      ["WRITE DATA", "transactional batches", "分别追加到 P1/P3 Leader"],
+      ["END", "COMMIT / ABORT markers", "各分区形成同一结论"]
+    ], [["Coordinator 状态", "transactional.id → epoch / partitions / state"], ["故障隔离", "Producer Epoch fence 旧实例"], ["范围", "Kafka Topic/Partition，不包含外部数据库"]], "Coordinator 协调结论，Partition Leader 保存数据和 Marker；两者缺一不可。", {
+      summary: "Transactional Producer 通过 transactional.id 找到 Transaction Coordinator。Coordinator 在 __transaction_state 中维护事务状态和参与 Partition；数据批次仍写各自 Leader。结束时 Coordinator 驱动各 Partition 写 Commit 或 Abort Marker。",
+      config: [["transactional.id", "稳定且实例唯一"], ["transaction.timeout.ms", "事务最长开放时间"], ["enable.idempotence", "事务隐含要求"], ["__transaction_state", "内部事务状态 Topic"]],
+      gain: "多个 Kafka Partition 的写入能形成原子可见结论，并用 Epoch 隔离旧 Producer。", cost: "增加一次协调状态机、Marker 写入和故障恢复；不能直接包住任意数据库事务。", code: "coordinator.begin(transactionalId, epoch)\ncoordinator.addPartitions(P1, P3)\nleaders.append(transactionalBatches)\ncoordinator.prepareCommit()\nleaders.append(COMMIT_MARKER)\ncoordinator.completeCommit()", source: DOCS.design
+    }, "control"),
+
+    page("14 · PHYSICAL WRITE", "TRANSACTION · 可见性", "24A · HW VS LSO", "HW 前进了，事务消息仍可能看不见", "复制完成为什么还不等于 read_committed 可读？", "HW 只回答“副本是否提交”；LSO 还要等最早未完成事务结束。read_committed 只读到 LSO，并通过事务索引跳过 Abort 数据。", [
+      ["HW=50", "0..49 已复制", "普通复制边界"],
+      ["OPEN TXN", "first offset=42", "事务还未结束"],
+      ["LSO=42", "read_committed stops", "后面的普通消息也暂不可见"],
+      ["MARKER", "COMMIT / ABORT", "结束后 LSO 才继续推进"]
+    ], [["read_uncommitted", "可读到 HW，但会看到未决/中止数据"], ["read_committed", "可见上界 LSO ≤ HW"], ["offset 空洞", "Marker 和 aborted records 不交给应用"]], "HW 是复制提交线；LSO 是事务稳定线。", {
+      summary: "Last Stable Offset 是第一个未完成事务的位置；没有开放事务时可推进到 High Watermark。read_committed Consumer 不越过 LSO，并过滤已 Abort 的事务批次，因此长事务会制造看似 Consumer Lag 的可见性等待。",
+      config: [["isolation.level", "read_committed"], ["HW", "复制提交边界"], ["LSO", "事务稳定边界"], ["txnindex", "记录 aborted transaction 范围"]],
+      gain: "Consumer 不会看到最终 Abort 的数据，也不会看到跨分区事务的半成品。", cost: "开放事务会挡住后续可见性，且应用观察到的 Offset 可以有空洞。", code: "readUpperBound = isolation == read_committed ? LSO : HW\nfor batch before readUpperBound:\n  if aborted(batch, txnIndex): skip\n  else return batch.records", source: DOCS.consumerApi
+    }, "timeline"),
+
+    page("14 · PHYSICAL WRITE", "TRANSACTION · EOS", "24B · OFFSETS IN TRANSACTION", "Kafka→Kafka 的 Exactly-once 还要把 Offset 放进事务", "处理 P1/42 并写结果 Topic 时，怎样避免“结果写了但 Offset 没提交”？", "同一个事务里写输出记录，再用 sendOffsetsToTransaction 提交输入 Group 的下一 Offset；Commit Marker 让两者一起可见。", [
+      ["READ", "input P1@42", "read_committed"],
+      ["TRANSFORM", "build result", "不要先独立 Commit Offset"],
+      ["TXN WRITE", "output + offset 43", "Offsets 也进入事务"],
+      ["COMMIT", "both visible or neither", "崩溃后安全重试"]
+    ], [["适用", "Kafka → 处理 → Kafka"], ["必须", "enable.auto.commit=false + read_committed"], ["外部 DB", "仍需 Outbox/Inbox/幂等"]], "Kafka EOS 的关键不是“不重试”，而是把输出和输入恢复点放进同一个 Kafka 事务。", {
+      summary: "Consume-transform-produce 场景中，Producer 事务同时写输出 Topic，并把消费组下一 Offset 发送给 Transaction Coordinator。事务提交后输出与 Offset 一起可见；Abort 时两者都不推进。",
+      config: [["transactional.id", "每个实例稳定且唯一"], ["enable.auto.commit", "false"], ["isolation.level", "read_committed"], ["sendOffsetsToTransaction", "提交 input offset 43"]],
+      gain: "进程在任意 Kafka 边界崩溃时，不会留下“输出存在、Offset 未提交”或相反的半完成状态。", cost: "只覆盖 Kafka 内部读写；长事务增加 LSO 等待，实例身份与 fencing 必须正确。", code: "beginTransaction()\nproduce(outputRecord)\nsendOffsetsToTransaction({P1: 43}, groupMetadata)\ncommitTransaction()\n// crash → abort + replay input 42", source: DOCS.design
+    }, "scenario"),
 
     page("14 · PHYSICAL WRITE", "CORE DESIGN · 高可用", "25 · AVAILABILITY BLUEPRINT", "为什么 Broker 坏了，消息还能继续走？", "高可用只是多复制几份吗？", "不是。副本提供冗余，ISR 定义安全候选，ACK/HW 定义确认边界，Epoch 与 Metadata 完成故障接管。", [
       ["SPREAD", "RF + broker.rack", "副本跨故障域放置"],
@@ -457,6 +538,17 @@
       gain: "可以按在线低延迟或离线高吞吐选择合适批量。", cost: "过大响应增加内存与长尾，过小则增加请求、系统调用与 Broker CPU。", code: "return fetch when\n bytes >= fetch.min.bytes\n or wait >= fetch.max.wait.ms\nsubject to response size caps", source: DOCS.consumer
     }, "compare"),
 
+    page("14 · PHYSICAL WRITE", "BROKER · 延迟操作", "40A · DELAYED FETCH", "数据不够时，Fetch 也不会占住 Handler", "fetch.min.bytes=64KiB，但现在只有 8KiB，Broker 在做什么？", "Broker 先定位并尝试读取；不足 min bytes 时把请求注册成 DelayedFetch。新消息追加或等待超时会唤醒检查，再构造响应。", [
+      ["READ TRY", "available=8KiB", "低于 min=64KiB"],
+      ["WATCH", "P1 / P3 keys", "进入 Fetch Purgatory"],
+      ["WAKE", "new append or timeout", "只检查相关 Partition"],
+      ["RETURN", "64KiB or max.wait", "Handler/Processor 发送响应"]
+    ], [["完成条件", "累计可读 bytes ≥ min bytes"], ["兜底", "fetch.max.wait.ms 到期"], ["同一设计", "DelayedProduce 与 DelayedFetch 共用条件等待思想"]], "Fetch batching 的“等”发生在可唤醒的条件对象里，不是让线程 sleep。", {
+      summary: "FetchRequest 暂时不满足 min bytes 时，ReplicaManager 创建 DelayedFetch 并按相关 TopicPartition 注册。新 Record append、HW 变化或计时器到期会触发检查；满足条件后读取结果并回调发送 FetchResponse。",
+      config: [["fetch.min.bytes", "客户端希望的最小响应"], ["fetch.max.wait.ms", "客户端最长等待"], ["fetch.max.bytes", "响应总量上限"], ["fetch purgatory", "按 Partition 的条件等待"]],
+      gain: "Broker 可以批量聚合数据，同时不为每个长轮询请求占住一个 Handler 线程。", cost: "min bytes 过大或流量过低会把延迟推到 max wait；大量等待说明吞吐策略或分区流量需复核。", code: "result = read(fetchInfo)\nif result.bytes < minBytes:\n  purgatory.watch(partitions, request)\nappend/HW/timeout → checkAndComplete()", source: DOCS.delayedProduce
+    }, "scenario"),
+
     page("14 · PHYSICAL WRITE", "CONSUMER · 解码", "41 · DECOMPRESS & DESERIALIZE", "字节怎样重新变成对象", "#A1024 到了 Consumer JVM 后，要做哪些检查？", "客户端解析 RecordBatch、验证 CRC、解压，然后分别反序列化 key/value；Headers 保持 byte[]。", [
       ["NETWORK", "FetchResponse bytes", "按 Partition 组织批次"],
       ["BATCH", "CRC + decompress", "zstd → Records"],
@@ -556,6 +648,28 @@
       gain: "拆分多个 Offset 能快速判断慢在 Broker、网络、业务还是 Commit。", cost: "只看一个总 Lag 数字容易误判；高写入速率下必须看变化率和时间窗口。", code: "log end / HW\n - consumer position\n - committed offset\ncorrelate with fetch and processing latency", source: DOCS.consumerApi
     }),
 
+    page("14 · PHYSICAL WRITE", "OPERATIONS · 积压", "48A · BACKLOG EQUATION", "积压不是一个数，而是一条速率方程", "Lag 每分钟多 6 万，应该先加 Consumer 还是先查 Broker？", "先比较到达、Fetch、业务处理与 Commit 四个速率；只有长期 input rate > safe commit rate，积压才会持续增长。", [
+      ["INPUT", "120k records/s", "Producer 写入速率"],
+      ["FETCH", "118k records/s", "网络和 Broker 基本跟上"],
+      ["PROCESS", "60k records/s", "数据库成为瓶颈"],
+      ["SAFE COMMIT", "58k records/s", "Lag 每秒约 +62k"]
+    ], [["先看斜率", "Lag 在涨、平、还是降"], ["再按 Partition", "总量会掩盖热点 P1"], ["安全时间", "retention headroom = 可保留字节 / 净积压速率"]], "Lag 是库存；到达率减安全完成率，才是积压增长速度。", {
+      summary: "积压治理先做速率分解：Producer 到达率、Consumer Fetch 率、业务处理完成率、Offset 安全提交率。Position 落后说明 Fetch/交付慢；Position 已追上但 Commit 落后说明处理或提交慢。总 Lag 还必须拆到 Partition。",
+      config: [["records-lag-max", "最大 Partition Lag"], ["records-consumed-rate", "客户端交付速率"], ["processing rate", "业务真实完成速率"], ["retention headroom", "距离历史被删还有多久"]],
+      gain: "先定位瓶颈再扩容，避免无效加 Consumer 或盲目调 Fetch。", cost: "要同时采集客户端、Broker、下游和 Partition 维度指标；只有总 Lag 无法给出根因。", code: "backlogGrowth = inputRate - safeCommitRate\nif position << logEnd: inspect fetch/broker/network\nelse if committed << position: inspect processing/commit\ninspect perPartition before scaling", source: DOCS.consumerApi
+    }, "equation"),
+
+    page("14 · PHYSICAL WRITE", "CONSUMER · 并发", "48B · PROCESSING MODELS", "加处理线程之前，先守住 Partition 完成水位", "一个 Consumer 能不能 poll 后扔给 20 个线程并行处理？", "能，但 KafkaConsumer 本身不是线程安全的；并发任务完成顺序可能乱，Commit 只能推进到每个 Partition 已连续完成的下一 Offset。", [
+      ["MODEL A", "1 Consumer / thread", "简单保序 · 并行上限=Partition"],
+      ["MODEL B", "poll thread + workers", "处理可扩展 · 所有权更复杂"],
+      ["OUT OF ORDER", "42 done · 43 running · 44 done", "不能提交 45"],
+      ["WATERMARK", "commit 43 only", "等 43 完成后才能跨过 44"]
+    ], [["线程规则", "只有 poll 线程访问 KafkaConsumer"], ["背压", "每 Partition 有界队列 + pause/resume"], ["顺序", "需要严格顺序时同 Partition 串行"]], "并发处理看的是“连续完成水位”，不是“最大的已完成 Offset”。", {
+      summary: "官方客户端给出两类基本模型：每线程一个 Consumer，或消费与处理解耦。后一种能独立扩展 Worker，但必须按 TopicPartition 路由任务、限制在途数量，并只提交无空洞的连续完成 Offset；否则先完成 44 就提交 45 会丢掉尚未完成的 43。",
+      config: [["Consumer thread safety", "KafkaConsumer 不可并发调用"], ["max.poll.records", "限制单轮交付"], ["pause/resume", "控制分区在途数量"], ["commit", "per-partition contiguous watermark"]],
+      gain: "慢业务处理可以与 poll/心跳解耦，充分使用 CPU 或下游并发。", cost: "顺序、背压、Rebalance 撤销、在途取消与 Commit 都要自行实现，复杂度显著增加。", code: "poll → queueByPartition(records)\nqueue full → pause(tp)\nworker done → markDone(tp, offset)\ncommit(contiguousNextOffset(tp))", source: DOCS.consumerThreads
+    }, "scenario"),
+
     page("14 · PHYSICAL WRITE", "CORE DESIGN · 高性能", "49 · PERFORMANCE BLUEPRINT", "Kafka 为什么写磁盘、做复制，还能保持高吞吐？", "高性能来自一个神奇技巧吗？", "不是。Kafka 把并行、批处理、顺序 I/O、操作系统缓存和少拷贝组合成同一条流水线。", [
       ["PARALLEL", "Partition → Broker", "用独立日志扩大并行度"],
       ["AMORTIZE", "Batch + compression", "摊薄协议头、系统调用和网络往返"],
@@ -565,6 +679,17 @@
       summary: "Kafka 的吞吐来自一组互相配合的设计：Partition 提供并行度，RecordBatch 摊薄固定开销并提高压缩率，Append-only Log 与 Page Cache 形成顺序 I/O，Consumer 预取与 sendfile 路径降低等待和复制。",
       config: [["parallelism", "partitions"], ["batching", "batch.size + linger.ms"], ["compression", "zstd / lz4"], ["storage", "page cache"], ["read", "fetch batching / sendfile"]],
       gain: "固定开销被批次摊薄，磁盘访问更顺序，Producer、Broker、Follower 与 Consumer 可以流水并行。", cost: "批次等待提高尾延迟；Partition 过多增加元数据、文件句柄和 Rebalance 成本；TLS 会削弱零拷贝优势。", code: "tp = partition(hash(key))\nbatch = accumulator[tp].append(serialize(record))\nif batch.ready:\n  request[leader(tp)].add(compress(batch))\n\nbroker.appendSequentially(batch) // Page Cache\nfollowers.pullBatches()\nconsumer.prefetch()\nsendFileSliceWhenPossible()", source: DOCS.design
-    }, "blueprint")
+    }, "blueprint"),
+
+    page("14 · PHYSICAL WRITE", "CORE DESIGN · 延迟", "49A · END-TO-END LATENCY", "一条消息的延迟，是五段等待相加", "为什么 Broker RTT 只有 8ms，业务却 300ms 后才看到 Event？", "端到端延迟不仅是网络：Producer 聚合、请求排队、副本确认、Fetch 长轮询和业务处理都可能贡献尾延迟。", [
+      ["PRODUCER", "queue + linger 5ms", "入批与等待发送"],
+      ["BROKER", "queue + append 8ms", "接入、校验、本地写"],
+      ["REPLICA", "acks=all 22ms", "等待最慢 ISR"],
+      ["CONSUMER", "fetch wait 45ms + process 220ms", "真正大头在下游"]
+    ], [["总公式", "produce queue + network + replica + fetch wait + process"], ["吞吐拨杆", "linger / batch / fetch.min.bytes"], ["可靠性拨杆", "acks / minISR / transaction"]], "任何调参先说清它缩短哪一段，又把成本转移到哪里。", {
+      summary: "Kafka 端到端 P99 应按阶段预算，而不是只看 Broker request latency。更大的 linger、批次和 fetch.min.bytes 提高吞吐但增加等待；acks=all 与事务提高可靠性/原子性但受最慢副本与开放事务影响；业务处理常是最大且最容易被忽略的一段。",
+      config: [["record-queue-time", "Producer 排队"], ["request-latency", "网络 + Broker + ACK"], ["fetch-latency", "Consumer 拉取"], ["processing latency", "业务完成"], ["commit latency", "恢复点推进"]],
+      gain: "阶段化预算能直接定位尾延迟，并明确性能优化是否牺牲批量、可靠性或资源。", cost: "单一平均值会掩盖热点 Partition、慢副本和下游长尾，必须观测 P95/P99 与分区分布。", code: "endToEnd = producerQueue\n  + requestAndBroker\n  + replicaCommit\n  + fetchWait\n  + deserializeAndProcess\n  + optionalCommit", source: DOCS.design
+    }, "equation")
   ];
 })();

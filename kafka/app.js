@@ -120,7 +120,8 @@
       if (!anchor) return;
       const article = document.createElement("article");
       const isBlueprint = item.mode === "blueprint";
-      article.className = `slide generated-slide${isBlueprint ? " design-blueprint-slide" : ""}`;
+      const visualMode = String(item.mode || "flow").replace(/[^a-z0-9-]/gi, "");
+      article.className = `slide generated-slide mode-${visualMode}${isBlueprint ? " design-blueprint-slide" : ""}`;
       article.dataset.title = item.title;
       article.dataset.section = item.section;
       article.dataset.chapter = item.chapter;
@@ -128,16 +129,19 @@
       const nodeCount = Math.max(1, item.nodes.length);
       const eventNode = item.nodes.findIndex(node => node.some(value => String(value).includes("#A1024")));
       const hotIndex = eventNode >= 0 ? eventNode : nodeCount - 1;
-      const nodes = item.nodes.map((node, index) => `
-        <button class="lesson-node hotspot${index === hotIndex ? " is-hot" : ""}" type="button" data-index="${String(index + 1).padStart(2, "0")}">
+      const nodes = item.nodes.map((node, index) => {
+        const stateClass = node[3] ? ` state-${String(node[3]).replace(/[^a-z0-9-]/gi, "")}` : "";
+        return `
+        <button class="lesson-node hotspot${index === hotIndex ? " is-hot" : ""}${stateClass}" type="button" data-index="${String(index + 1).padStart(2, "0")}">
           <span>${escapeHtml(node[0])}</span><strong>${escapeHtml(node[1])}</strong><small>${escapeHtml(node[2])}</small>
-        </button>`).join("");
+        </button>`;
+      }).join("");
       const facts = item.facts.map(fact => `
         <div class="lesson-fact"><span>${escapeHtml(fact[0])}</span><strong>${escapeHtml(fact[1])}</strong>${fact[2] ? `<small>${escapeHtml(fact[2])}</small>` : ""}</div>`).join("");
       const pseudocode = isBlueprint ? `<pre class="blueprint-code" aria-label="依据 Kafka 实现提炼的伪代码"><span>IMPLEMENTATION MODEL · PSEUDOCODE</span><code>${escapeHtml(item.note.code)}</code></pre>` : "";
       article.innerHTML = `
         <header class="slide-heading"><span>${escapeHtml(item.section)}</span><h2>${escapeHtml(item.question)}</h2><p>${escapeHtml(item.intro)}</p></header>
-        <div class="lesson-board${item.mode === "compare" ? " is-compare" : ""}${isBlueprint ? " is-blueprint" : ""}" data-chapter="${escapeHtml(item.chapter)}">
+        <div class="lesson-board is-${visualMode}" data-chapter="${escapeHtml(item.chapter)}">
           <div class="lesson-path" style="--node-count:${nodeCount}">${nodes}</div>
           ${pseudocode}
           <div class="lesson-facts">${facts}</div>
@@ -164,14 +168,16 @@
   ];
 
   function inferJourneyStage(slide, slideIndex) {
-    if (slideIndex <= 2) return "code";
-    if (slideIndex <= 16) return "producer";
-    if (slideIndex === 17) return "network";
-    if (slideIndex <= 21) return "broker";
-    if (slideIndex <= 28) return "storage";
-    if (slideIndex <= 38) return "replica";
-    if (slideIndex <= 58) return "consumer";
-    return "commit";
+    const scope = `${slide.dataset.section || ""} ${slide.dataset.chapter || ""} ${slide.dataset.title || ""}`.toUpperCase();
+    if (/FINAL CHECK|OPERATIONS|CONSISTENCY|POISON|COMMIT STRATEGIES|POSITION VS COMMITTED|END-TO-END LATENCY|PERFORMANCE BLUEPRINT/.test(scope)) return "commit";
+    if (/CONSUMER|GROUP COORDINATOR|JOIN & ASSIGN|ASSIGNORS|REBALANCE|HEARTBEAT|POLL PIPELINE|FETCH REQUEST|FETCH TUNING|DELAYED FETCH|DECOMPRESS/.test(scope)) return "consumer";
+    if (/REPLICATION|ISR|ACK MODES|MIN ISR|DELAYED PRODUCE|LEADER FAILURE|KRAFT|TRANSACTION|AVAILABILITY/.test(scope)) return "replica";
+    if (/STORAGE|SEGMENT|RETENTION|COMPACT|TOMBSTONE|LOG FILES|LOGICAL STORAGE|PHYSICAL WRITE|PAGE CACHE|INDEX LOOKUP|ZERO COPY/.test(scope)) return "storage";
+    if (/BROKER|AUTH ACL|VALIDATION|OFFSET ASSIGNMENT/.test(scope)) return "broker";
+    if (/NETWORK/.test(scope)) return "network";
+    if (/PRODUCER|METADATA|SERIALIZER|SCHEMA|PARTITIONER|ACCUMULATOR|BUFFER POOL|COMPRESSION|SENDER|IN-FLIGHT|RETRY|IDEMPOTENT/.test(scope)) return "producer";
+    if (/OPENING|HIGH LEVEL|WHY KAFKA|BUSINESS CODE/.test(scope)) return "code";
+    return slideIndex < 3 ? "code" : "commit";
   }
 
   const supplementRules = [
