@@ -30,9 +30,29 @@ a { color: inherit; text-decoration: none; }
 .site-brand strong { font-size: 17px; letter-spacing: -.025em; }
 .site-brand small, .header-meta { color: #8290a3; font: 800 8px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .1em; }
 .site-brand small { margin-top: 3px; }
+.header-actions { display: flex; align-items: center; gap: clamp(16px, 2.1vw, 32px); }
 .header-meta { display: flex; gap: 24px; align-items: center; }
 .header-meta span { color: var(--orange); }
 .header-meta b { font-weight: 800; }
+.github-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 13px;
+  border: 1px solid var(--line-strong);
+  border-radius: 7px;
+  background: rgba(255,255,255,.025);
+  color: #c9d2de;
+  font-size: 10px;
+  font-weight: 800;
+  transition: color .2s ease, border-color .2s ease, background .2s ease, transform .2s ease;
+}
+.github-link svg { width: 17px; height: 17px; fill: currentColor; }
+.github-link b { color: var(--orange); font-size: 13px; transition: transform .2s ease; }
+.github-link:hover, .github-link:focus-visible { border-color: var(--orange); background: rgba(255,122,26,.08); color: #fff; transform: translateY(-1px); }
+.github-link:hover b, .github-link:focus-visible b { transform: translate(2px, -2px); }
+.github-link:focus-visible { outline: 2px solid rgba(255,122,26,.35); outline-offset: 3px; }
 
 .atlas-shell {
   height: calc(100svh - 72px);
@@ -161,6 +181,7 @@ kbd { display: inline-grid; min-width: 21px; height: 21px; place-items: center; 
   .course-row { grid-template-columns: 24px 38px minmax(155px, .8fr) minmax(200px, 1fr) 48px; }
   .course-enter { display: none; }
   .intro-foot span:nth-of-type(3), .intro-foot i:nth-of-type(3), .intro-foot span:nth-of-type(4) { display: none; }
+  .header-meta span { display: none; }
 }
 
 @media (max-width: 720px) {
@@ -168,7 +189,10 @@ kbd { display: inline-grid; min-width: 21px; height: 21px; place-items: center; 
   .site-brand img { width: 36px; height: 36px; }
   .site-brand strong { font-size: 15px; }
   .site-brand small, .header-meta span, .header-meta b:last-child { display: none; }
-  .header-meta { font-size: 7px; }
+  .header-actions { gap: 10px; }
+  .header-meta { display: none; }
+  .github-link { width: 38px; padding: 0; justify-content: center; }
+  .github-link span, .github-link b { display: none; }
   .atlas-shell { height: calc(100svh - 60px); display: grid; grid-template-columns: 1fr; grid-template-rows: minmax(165px, 29%) minmax(0, 71%); }
   .atlas-intro { grid-template-columns: 1fr 116px; grid-template-rows: 1fr auto; padding: 18px 17px 12px; border-right: 0; border-bottom: 1px solid var(--line); }
   .intro-copy { align-self: center; }
