@@ -10,10 +10,10 @@ Systems X-Ray 是一组面向生产开发者的交互式 Web 课件。每门课�
 
 | 课程 | 追踪对象 | 主线 | 页数 |
 |---|---|---|---:|
-| [Kafka](./kafka/) | `Event #A1024` | Producer → Broker → Segment → Consumer | 66 |
+| [Kafka](./kafka/) | `Event #A1024` | Produce → Append → Fetch → Commit | 66 |
 | [OpenSearch](./opensearch/) | `Document #D2048` | CRUD → Lucene → Search → Vector | 55 |
-| [Redis](./redis/) | `Key session:user:9527` | RESP → Dict → AOF → Cluster | 55 |
-| [PostgreSQL](./postgresql/) | `Row orders.id=A1024` | Planner → Heap → MVCC → WAL | 65 |
+| [Redis](./redis/) | `Key session:user:9527` | CRUD → Dict → Persistence → Cluster | 55 |
+| [PostgreSQL](./postgresql/) | `Row orders.id=A1024` | CRUD → Planner → MVCC → WAL | 65 |
 
 四门课都是纯静态 HTML/CSS/JavaScript：没有框架、没有构建步骤，打开即可学习，也可以直接发布到 GitHub Pages。
 
@@ -27,8 +27,11 @@ Systems X-Ray 是一组面向生产开发者的交互式 Web 课件。每门课�
 4. **逻辑 API 必须落到物理实现**：代码最终要对应线程、Buffer、Socket、Page、Segment、WAL 等真实结构。
 5. **把收益和代价放在一起**：性能、高可用、一致性、容量与故障不能拆开讲。
 6. **一页讲不清就拆页**：不缩字、不塞满、不在主课件里制造滚动条。
+7. **统一用生产问题收尾**：CRUD、性能、高可用、一致性、配置取舍与跨系统比较。
 
 完整规范见 [课程编写规范](./docs/course-authoring.md)。
+
+仓库内还提供项目级 Codex Skill：[`systems-xray-course-builder`](./.agents/skills/systems-xray-course-builder/SKILL.md)。后续新增课程、重排讲解、画原理图或做逐页审查时，可显式使用 `$systems-xray-course-builder`，让教学结构、图形语法、桌面 UI 与技术审查遵守同一套标准。
 
 ## 目录结构
 
@@ -41,6 +44,7 @@ systems-xray/
 ├── redis/
 ├── postgresql/
 ├── docs/                      # 编写规范、审查记录与原理图
+├── .agents/skills/            # 本项目的课件设计与审查 Skill
 └── archive/                   # 不参与当前课程入口的历史实验
 ```
 

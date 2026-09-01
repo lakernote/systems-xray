@@ -547,7 +547,7 @@
     next.querySelector("strong").textContent = index === slides.length - 1 ? "已经完成" : "下一页";
     updateDeep(item);
     document.querySelectorAll("[data-overview-index]").forEach(el => el.classList.toggle("is-current", Number(el.dataset.overviewIndex) === index));
-    if (updateHash) history.replaceState(null, "", `#slide-${index + 1}`);
+    if (updateHash && location.hash !== `#slide-${index + 1}`) history.pushState({ slide: index + 1 }, "", `#slide-${index + 1}`);
   }
 
   function updateDeep(item, component = null) {
@@ -649,6 +649,7 @@
   });
 
   window.addEventListener("hashchange", () => show(parseHash(), false));
+  window.addEventListener("popstate", () => show(parseHash(), false));
   window.addEventListener("keydown", event => {
     const lessonHotspot = event.target.closest?.("[role='button'][data-deep-open]");
     if (lessonHotspot && (event.key === "Enter" || event.key === " ")) {

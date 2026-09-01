@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Systems X-Ray：用一条数据的物理旅程学习 Kafka、OpenSearch、Redis 与 PostgreSQL。" />
-    <meta name="theme-color" content="#0c1728" />
+    <meta name="theme-color" content="#f5f1e8" />
     <title>Systems X-Ray · 系统原理可视化课程</title>
     <link rel="icon" href="./assets/brand-mark.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="./assets/home.css" />
@@ -18,7 +18,7 @@
         <span><strong>Systems X-Ray</strong><small>SEE HOW SOFTWARE WORKS FROM THE INSIDE</small></span>
       </a>
       <div class="header-actions">
-        <div class="header-meta"><span>INTERACTIVE SYSTEMS ATLAS</span><b>4 COURSES</b><b>241 PAGES</b></div>
+        <div class="header-meta"><span>INTERACTIVE SYSTEMS ATLAS</span><b id="course-total">4 门课</b><b>241 个问题</b></div>
         <a class="github-link" href="https://github.com/lakernote/systems-xray" target="_blank" rel="noreferrer" aria-label="在 GitHub 查看 Systems X-Ray 仓库">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.86c-2.78.6-3.37-1.18-3.37-1.18-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.9 1.53 2.35 1.09 2.92.83.09-.65.35-1.09.64-1.34-2.22-.25-4.56-1.11-4.56-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02A9.6 9.6 0 0 1 12 6.84a9.6 9.6 0 0 1 2.5.34c1.91-1.29 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.86v2.75c0 .27.18.58.69.48A10 10 0 0 0 12 2Z"/></svg>
           <span>GitHub 仓库</span><b>↗</b>
@@ -31,7 +31,7 @@
         <div class="intro-copy">
           <p class="eyebrow">LEARN BY FOLLOWING ONE DATA</p>
           <h1 id="atlas-title">进入系统内部，<br />看见数据怎么走。</h1>
-          <p class="intro-lede">从业务代码出发，一路追到进程、内存、网络、文件、副本与故障边界。</p>
+          <p class="intro-lede">先看 CRUD 怎么用，再钻进进程、内存、网络、文件与副本；最后用故障理解性能、高可用、一致性和取舍。</p>
         </div>
 
         <div class="xray-stage" aria-live="polite">
@@ -55,18 +55,30 @@
           <div><p>COURSE DIRECTORY</p><h2 id="directory-title">选择一条数据，开始追踪。</h2></div>
           <span>键盘 <kbd>1</kbd>—<kbd>4</kbd> 直达</span>
         </header>
+        <div class="directory-tools">
+          <div class="category-tabs" role="tablist" aria-label="课程分类">
+            <button type="button" role="tab" aria-selected="true" data-filter="all">全部</button>
+            <button type="button" role="tab" aria-selected="false" data-filter="realtime">事件与缓存</button>
+            <button type="button" role="tab" aria-selected="false" data-filter="data">检索与数据库</button>
+          </div>
+          <div class="directory-pager" aria-label="课程目录分页">
+            <button id="directory-prev" type="button" aria-label="上一页">←</button>
+            <code id="directory-page">01 / 01</code>
+            <button id="directory-next" type="button" aria-label="下一页">→</button>
+          </div>
+        </div>
 
         <nav class="course-list" aria-label="课程列表">
-          <a class="course-row is-selected" href="./kafka/" data-shortcut="1" data-kind="COURSE 01" data-object="EVENT" data-id="#A1024" data-flow="Producer → Broker → Segment → Consumer">
+          <a class="course-row is-selected" href="./kafka/" data-category="realtime" data-shortcut="1" data-kind="COURSE 01" data-object="EVENT" data-id="#A1024" data-flow="Produce → Append → Fetch → Commit" style="--course-accent:#d45d13;--course-soft:#fff0e2">
             <span class="course-number">01</span>
             <span class="course-glyph" aria-hidden="true"><svg viewBox="0 0 40 40"><path d="M7 20h8m10 0h8M15 12v16m10-16v16"/><circle cx="15" cy="20" r="4"/><circle cx="25" cy="20" r="4"/></svg></span>
             <span class="course-title"><small>DISTRIBUTED LOG</small><strong>Kafka</strong><em>我是一条 Event <b>#A1024</b></em></span>
-            <span class="course-flow">Producer <i></i> Broker <i></i> Segment <i></i> Consumer</span>
+            <span class="course-flow">写入/读取 <i></i> 高性能 <i></i> 高可用 <i></i> 一致性</span>
             <span class="course-pages"><b>66</b><small>页</small></span>
             <span class="course-enter">进入 <b>↗</b></span>
           </a>
 
-          <a class="course-row" href="./opensearch/" data-shortcut="2" data-kind="COURSE 02" data-object="DOCUMENT" data-id="#D2048" data-flow="CRUD → Lucene → Search → Vector">
+          <a class="course-row" href="./opensearch/" data-category="data" data-shortcut="2" data-kind="COURSE 02" data-object="DOCUMENT" data-id="#D2048" data-flow="CRUD → Lucene → Search → Vector" style="--course-accent:#087f75;--course-soft:#dff3ee">
             <span class="course-number">02</span>
             <span class="course-glyph" aria-hidden="true"><svg viewBox="0 0 40 40"><circle cx="18" cy="18" r="9"/><path d="m25 25 8 8M13 18h10M18 13v10"/></svg></span>
             <span class="course-title"><small>SEARCH ENGINE</small><strong>OpenSearch</strong><em>我是一条 Document <b>#D2048</b></em></span>
@@ -75,26 +87,26 @@
             <span class="course-enter">进入 <b>↗</b></span>
           </a>
 
-          <a class="course-row" href="./redis/" data-shortcut="3" data-kind="COURSE 03" data-object="KEY" data-id="session:user:9527" data-flow="RESP → Dict → AOF → Cluster">
+          <a class="course-row" href="./redis/" data-category="realtime" data-shortcut="3" data-kind="COURSE 03" data-object="KEY" data-id="session:user:9527" data-flow="CRUD → Dict → Persistence → Cluster" style="--course-accent:#c74235;--course-soft:#fde9e5">
             <span class="course-number">03</span>
             <span class="course-glyph" aria-hidden="true"><svg viewBox="0 0 40 40"><path d="m7 15 13-7 13 7-13 7-13-7Zm0 6 13 7 13-7M7 27l13 7 13-7"/></svg></span>
             <span class="course-title"><small>IN-MEMORY STORE</small><strong>Redis</strong><em>我是一条 Key <b>session:user:9527</b></em></span>
-            <span class="course-flow">RESP <i></i> Dict <i></i> AOF <i></i> Cluster</span>
+            <span class="course-flow">CRUD <i></i> 内存 <i></i> 持久化 <i></i> 集群</span>
             <span class="course-pages"><b>55</b><small>页</small></span>
             <span class="course-enter">进入 <b>↗</b></span>
           </a>
 
-          <a class="course-row" href="./postgresql/" data-shortcut="4" data-kind="COURSE 04" data-object="ROW" data-id="orders.id=A1024" data-flow="Planner → Heap → MVCC → WAL">
+          <a class="course-row" href="./postgresql/" data-category="data" data-shortcut="4" data-kind="COURSE 04" data-object="ROW" data-id="orders.id=A1024" data-flow="CRUD → Planner → MVCC → WAL" style="--course-accent:#2d67c7;--course-soft:#e6eefc">
             <span class="course-number">04</span>
             <span class="course-glyph" aria-hidden="true"><svg viewBox="0 0 40 40"><path d="M7 8h26v24H7zM7 16h26M7 24h26M16 8v24"/></svg></span>
             <span class="course-title"><small>RELATIONAL DATABASE</small><strong>PostgreSQL</strong><em>我是一行 Row <b>orders.id=A1024</b></em></span>
-            <span class="course-flow">Planner <i></i> Heap <i></i> MVCC <i></i> WAL</span>
+            <span class="course-flow">CRUD <i></i> 执行 <i></i> MVCC <i></i> WAL</span>
             <span class="course-pages"><b>65</b><small>页</small></span>
             <span class="course-enter">进入 <b>↗</b></span>
           </a>
         </nav>
 
-        <footer class="directory-foot"><span>STATIC HTML · NO BUILD</span><span>READY FOR GITHUB PAGES</span><span>© SYSTEMS X-RAY</span></footer>
+        <footer class="directory-foot"><span>浅色交互课件 · 一页一个问题</span><span>CRUD · 性能 · 高可用 · 一致性 · 取舍</span><span>GitHub Pages</span></footer>
       </section>
     </main>
 

@@ -662,19 +662,30 @@ kbd { padding: 2px 5px; border: 1px solid #bac2ca; border-radius: 4px; backgroun
 }
 
 @media (max-width: 760px) {
-  :root { --bar-h: 56px; --transport-h: 62px; }
+  :root { --bar-h: 64px; --transport-h: 64px; }
   .course-bar { padding: 0 10px; }
   .brand small, .trace-pill, .header-tool span { display: none; }
-  .header-tool { width: 36px; justify-content: center; padding: 0; border-color: #c0c7ce; }
-  .deck-shell { padding: 0; }
+  .header-tool { width: 44px; height:44px; justify-content: center; padding: 0; border-color: #c0c7ce; }
+  .deck-shell { height:calc(100dvh - var(--bar-h));padding: 0; }
   .stage-wrap { border: 0; border-radius: 0; }
-  .slide { min-width: 760px; }
-  .slide-stage { overflow-x: auto; overflow-y: hidden; }
+  .slide { min-width: 0; width:100%; height:100%; grid-template-rows:none; overflow-x:hidden; overflow-y:auto; }
+  .slide.is-active{display:block}
+  .slide-stage { overflow: hidden; }
   .transport { position: relative; z-index: 10; grid-template-columns: 110px 1fr 110px; padding: 0 8px; }
   .page-position span { display: none; }
-  .mode-cover .slide-heading { left: 34px; width: 60%; }
-  .mode-cover .fact-rack { left: 34px; }
-  .cover-machine { right: 2%; }
+  .slide-heading,.mode-cover .slide-heading{position:relative;left:auto;top:auto;width:auto;padding:14px 15px 9px;background:rgba(251,250,246,.96)}
+  .slide-heading h1,.mode-cover .slide-heading h1{font-size:25px;line-height:1.08}.slide-heading p,.mode-cover .slide-heading p{display:block;margin-top:6px;font-size:12px;line-height:1.45}.slide-identity{display:flex}.slide-identity small{display:none}.slide-identity code{width:38px;height:38px}
+  .visual-board,.mode-cover .visual-board{position:relative;display:block;min-height:0;margin:0 10px 10px;padding:31px 10px 11px;overflow:visible;background:rgba(251,250,246,.94)}
+  .visual-board::before,.mode-cover .visual-board::before{left:12px;top:11px}
+  .mode-cover .fact-rack{position:relative;left:auto;bottom:auto;width:auto;margin-top:12px;grid-template-columns:1fr;padding:8px;border:1px dashed #aeb8c5;background:var(--write-soft)}
+  .cover-request-lab{display:none}
+  .cover-machine{position:relative;right:auto;top:auto;width:min(78vw,300px);margin:18px auto;transform:none}
+  .machine-path,.request-anatomy,.index-contract-topology,.get-topology,.rewrite-topology,.update-translation-topology,.system-primer,.write-topology,.cluster-machines,.physical-trays,.delete-shard-frame,.merge-physical-rail,.engine-order-rail,.two-purpose-ledger,.delete-records-rack,.fact-rack{height:auto;min-height:0;grid-template-columns:1fr!important;grid-template-rows:none!important;gap:9px}
+  .system-primer{display:none}
+  .machine-path{padding-top:30px}.machine-line,.document-token{display:none}.machine-node{height:auto;min-height:80px}
+  .request-parts,.routing-lane,.contract-nodes,.index-partitions,.shard-copy-group,.state-machinery,.primary-translator,.delete-record-lifecycle,.merge-clock{grid-template-columns:1fr!important;gap:6px}
+  .request-anatomy,.index-contract-topology,.get-topology,.rewrite-topology,.update-translation-topology{padding:4px 0 10px}
+  .evidence-band{height:auto;display:grid;grid-template-columns:1fr;overflow:visible}.evidence-band section{min-height:78px;padding:12px 13px;border-right:0;border-top:1px solid #c6cbd1}.evidence-band section:first-child{border-top:3px solid var(--accent)}.evidence-band section>span{font-size:10px}.evidence-band p,.evidence-band li{font-size:11px}.evidence-code pre{height:auto;min-height:72px;font-size:9px}
   #overview-grid { grid-template-columns: 1fr; padding-inline: 18px; }
 }
 

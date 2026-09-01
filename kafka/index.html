@@ -8,6 +8,7 @@
     <title>Systems X-Ray · Kafka Event 完整旅程</title>
     <link rel="icon" href="../assets/brand-mark.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="../assets/course-nav.css" />
   </head>
   <body>
     <a class="skip-link" href="#deck">跳到课程内容</a>
@@ -21,9 +22,7 @@
         <code id="header-page-count">01 / --</code>
       </div>
       <div class="header-actions">
-        <a class="header-tool course-switch" href="../opensearch/" aria-label="打开 OpenSearch 课程"><span>OpenSearch</span></a>
-        <a class="header-tool course-switch" href="../redis/" aria-label="打开 Redis 课程"><span>Redis</span></a>
-        <a class="header-tool course-switch" href="../postgresql/" aria-label="打开 PostgreSQL 课程"><span>PostgreSQL</span></a>
+        <button id="course-menu-toggle" class="header-tool course-menu-toggle" type="button" aria-label="切换课程" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg><span>课程</span></button>
         <div class="trace-pill" aria-label="当前追踪消息"><i></i><code>#A1024</code></div>
         <button id="open-overview" class="header-tool" type="button" aria-label="目录" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>目录</span></button>
         <button id="notes-toggle" class="header-tool" type="button" aria-label="打开深挖资料" aria-expanded="false" aria-controls="notes-panel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4zM8 8h8M8 12h8M8 16h5"/></svg><span>深挖</span></button>
@@ -221,5 +220,6 @@ producer.<strong>send(record)</strong>;</code></pre><button class="record-anatom
     <div id="overview" class="overview" aria-hidden="true"><header><div><span id="overview-count">KAFKA · END-TO-END</span><h2>选择一页继续</h2></div><button id="close-overview" type="button">关闭 <kbd>Esc</kbd></button></header><div id="overview-grid"></div></div>
     <script src="./course.js"></script>
     <script src="./app.js"></script>
+    <script src="../assets/course-nav.js"></script>
   </body>
 </html>

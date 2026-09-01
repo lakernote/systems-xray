@@ -8,6 +8,7 @@
     <title>Systems X-Ray · PostgreSQL Row 完整旅程</title>
     <link rel="icon" href="../assets/brand-mark.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="../assets/course-nav.css" />
   </head>
   <body>
     <a class="skip-link" href="#deck">跳到课程内容</a>
@@ -18,7 +19,7 @@
       </a>
       <div class="course-position" aria-live="polite"><strong id="header-title">一行订单的完整旅程</strong><code id="header-count">01 / --</code></div>
       <div class="header-actions">
-        <a class="header-tool course-switch" href="../redis/" aria-label="打开 Redis 课程"><span>Redis</span></a>
+        <button id="course-menu-toggle" class="header-tool course-menu-toggle" type="button" aria-label="切换课程" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg><span>课程</span></button>
         <div class="trace-pill" aria-label="当前追踪行"><i></i><code>order_id=A1024</code></div>
         <button id="open-overview" class="header-tool" type="button" aria-label="打开目录" aria-expanded="false"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>目录</span></button>
         <button id="deep-toggle" class="header-tool" type="button" aria-label="打开深挖资料" aria-expanded="false" aria-controls="deep-panel"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4zM8 8h8M8 12h8M8 16h5"/></svg><span>深挖</span></button>
@@ -53,5 +54,6 @@
     <script src="./course.js"></script>
     <script src="./visuals.js"></script>
     <script src="./app.js"></script>
+    <script src="../assets/course-nav.js"></script>
   </body>
 </html>

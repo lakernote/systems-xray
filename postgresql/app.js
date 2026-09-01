@@ -66,7 +66,7 @@
     prev.disabled = index === 0;
     next.disabled = index === slides.length - 1;
     next.querySelector("strong").textContent = index === slides.length - 1 ? "已学完" : "下一页";
-    if (updateHash) history.replaceState(null, "", `#slide-${index + 1}`);
+    if (updateHash && location.hash !== `#slide-${index + 1}`) history.pushState({ slide: index + 1 }, "", `#slide-${index + 1}`);
     document.title = `${two(index + 1)} · ${plain(item.shortTitle)} | Systems X-Ray`;
   }
 
@@ -117,6 +117,7 @@
     const rel = event.target.closest("[data-related-index]"); if (rel) { show(Number(rel.dataset.relatedIndex)); closeDeep(); }
   });
   addEventListener("hashchange", () => show(parseHash(), false));
+  addEventListener("popstate", () => show(parseHash(), false));
   addEventListener("keydown", event => {
     if (event.key === "Escape") { if (overview.classList.contains("is-open")) closeOverview(); else if (deep.classList.contains("is-open")) closeDeep(); }
     if (overview.classList.contains("is-open") || deep.classList.contains("is-open")) return;

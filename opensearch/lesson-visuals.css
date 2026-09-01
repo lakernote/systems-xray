@@ -640,3 +640,13 @@
   .views-orbit { gap-inline: 190px; }
   .lv-fetch { grid-template-columns: 1fr 32px 1.3fr 32px .8fr; }
 }
+@media (max-width: 760px) {
+  .lesson-visual { height:auto; min-height:0; display:block; padding:4px 0 10px; overflow:visible; }
+  .lesson-visual > [class^="lv-"],
+  .lesson-visual > [class*=" lv-"] { height:auto; min-height:0; display:grid; grid-template-columns:1fr!important; grid-template-rows:none!important; gap:9px; padding:4px 0 30px; }
+  .lesson-visual .lesson-arrow { min-height:24px; transform:rotate(90deg); justify-self:center; }
+  .lesson-visual section,
+  .lesson-visual button { min-height:74px; }
+  .views-orbit,.segment-cabinets,.local-media,.mapping-lanes,.dual-index-path,.write-choices,.vector-mode-switch,.ha-cluster,.ha-actions,.consistency-row,.resource-gauges,.diagnostic-tree .branches,.shard-minmax,.canmatch-cost,.segment-candidates,.local-rankings,.partial-buckets,.copy-card,.evidence-chain { height:auto; grid-template-columns:1fr!important; grid-template-rows:none!important; gap:7px!important; }
+  .views-orbit{gap:8px!important}.evidence-chain{display:grid}.replication-lane{grid-template-columns:1fr!important}.consistency-clock{grid-template-columns:1fr!important}.life-pipeline{grid-template-columns:1fr!important;font-size:8px}
+}
