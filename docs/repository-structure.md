@@ -29,7 +29,7 @@
 | `styles.css` | 课程布局和公共视觉语言 |
 | `course.js` | 页面顺序、讲义、配置、取舍与伪代码 |
 | `app.js` | 渲染、翻页、Hash、目录和键盘交互 |
-| `visuals.js` | 可选；复杂物理图或独立状态动画 |
+| `visuals.js` | 可选；复杂数据流程图或独立状态动画 |
 | `*-visuals.css/js` | 可选；仅在视觉实现过大时拆分 |
 
 课程可以复用 `/assets/course-shell.css` 中的通用课件框架，但不能跨目录引用另一门课程的课程数据、样式或运行脚本。每门课的配色与专用图形仍留在自己的目录中。
@@ -51,7 +51,7 @@
 
 - `SKILL.md`：触发范围、不可违背的课程契约与执行流程。
 - `references/teaching-playbook.md`：从优秀课程、技术书和图解中提炼的讲解方法。
-- `references/diagram-grammar.md`：物理拓扑、时序、状态变化和箭头语义。
+- `references/diagram-grammar.md`：CRUD 数据流、必要的物理边界、状态变化和箭头语义。
 - `references/desktop-ui.md`：浅色桌面课件的布局、交互与验收尺寸。
 - `references/technical-review.md`：配置、成功条件、副本方向、可见性与故障边界的审查表。
 

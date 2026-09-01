@@ -81,7 +81,7 @@
       [["SIMPLE","Query"],["EXTENDED","Parse/Bind/Execute"],["PARAM","typed values"],["SYNC","error boundary"]],["防注入、少解析、可 pipeline。","Prepared plan 可能不适合所有参数分布。"],
       "Parse(sql,$1 types)\nBind(params → portal)\nExecute(portal)\nSync",DOC.flow,{visual:{nodes:[["Parse","SQL + type OIDs"],["Bind","A1024 + values"],["Describe","row metadata"],["Execute","portal"],["Sync","ReadyForQuery"]]}}),
 
-    slide("10 · PARSER","query","Parser 会直接决定用哪个索引吗？","Parser 只把 SQL 文本变成语法树，并解析名字与类型；物理路径还没决定。","plan",
+    slide("10 · PARSER","query","Parser 会直接决定用哪个索引吗？","Parser 只把 SQL 文本变成语法树，并解析名字与类型；执行计划还没决定。","plan",
       ["Scanner/Parser 检查语法，得到 raw parse tree。","Analysis 解析 orders、列名、函数与操作符，完成类型推断，得到 Query tree。","权限、RLS 与规则重写也会影响最终查询树；此时还没有 Seq Scan 或 Index Scan。"],
       "语法正确只代表查询可被理解；选择索引属于 Planner，真正读页属于 Executor。",
       [["INPUT","SQL text"],["OUTPUT","Query tree"],["NAMES","catalog lookup"],["RLS","rewrite stage"]],["声明式 SQL 与物理算法解耦。","复杂搜索路径、隐式类型转换会改变解析结果。"],

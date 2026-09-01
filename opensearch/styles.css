@@ -73,7 +73,7 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
 .slide-identity code { display: grid; place-items: center; width: 42px; height: 42px; border: 1px solid var(--accent); border-radius: 50%; color: var(--accent); background: var(--soft); font-weight: 900; }
 
 .visual-board { position: relative; min-height: 0; margin: 0 34px 8px; padding: 16px 20px; display: grid; grid-template-rows: minmax(118px, 1.15fr) minmax(72px, .85fr); gap: 10px; overflow: hidden; border: 1.5px solid var(--line-strong); border-radius: 16px; background: rgba(251, 250, 246, .9); box-shadow: inset 0 -8px 0 rgba(18, 32, 51, .055); }
-.visual-board::before { content: attr(data-mode) " · PHYSICAL VIEW"; position: absolute; left: 20px; top: 13px; z-index: 2; color: #8490a2; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
+.visual-board::before { content: attr(data-mode) " · DATA FLOW"; position: absolute; left: 20px; top: 13px; z-index: 2; color: #8490a2; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
 .machine-path { position: relative; align-self: end; min-height: 116px; display: grid; grid-template-columns: repeat(var(--node-count), minmax(0, 1fr)); align-items: center; gap: 18px; padding: 25px 10px 4px; }
 .machine-line { position: absolute; left: 4%; right: 4%; top: 58%; height: 2px; background: #9aa9b6; }
 .machine-line::after { content: ""; position: absolute; right: -2px; top: -5px; border-left: 9px solid #9aa9b6; border-top: 6px solid transparent; border-bottom: 6px solid transparent; }

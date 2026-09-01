@@ -78,12 +78,12 @@
     lastFocus = document.activeElement;
     document.querySelector("#deep-kicker").textContent = `DEEP DIVE · ${item.section}`;
     document.querySelector("#deep-title").textContent = component?.name || plain(item.question);
-    document.querySelector("#deep-stage").textContent = `${component ? "物理组件" : "当前边界"} · ${item.stageName}`;
+    document.querySelector("#deep-stage").textContent = `${component ? "流程组件" : "当前边界"} · ${item.stageName}`;
     document.querySelector("#deep-boundary").textContent = component ? `${component.detail} ${item.deep.boundary}` : item.deep.boundary;
     const failures = component ? [`如果 ${component.name} 在这里阻塞或失败，当前命令不会无代价地跳过这个边界。`, ...item.deep.failures] : item.deep.failures;
     document.querySelector("#deep-failure").innerHTML = failures.slice(0, 3).map(text => `<li>${esc(text)}</li>`).join("");
     document.querySelector("#deep-inspect").innerHTML = item.deep.inspect.map(row => `<p><span>${esc(row[0])}</span><code>${esc(row[1])}</code></p>`).join("");
-    document.querySelector("#deep-question").textContent = component ? `${component.name} 完成什么后，命令才能进入下一物理边界？` : item.deep.question;
+    document.querySelector("#deep-question").textContent = component ? `${component.name} 完成什么后，命令才能进入下一步？` : item.deep.question;
     document.querySelector("#deep-answer-text").textContent = component ? `${component.detail} 主线结论：${item.takeaway}` : item.deep.answer;
     document.querySelector("#deep-answer").removeAttribute("open");
     const related = slides.map((slide, i) => ({slide, i})).filter(row => row.slide.stage === item.stage && row.i !== index).sort((a,b) => Math.abs(a.i-index)-Math.abs(b.i-index)).slice(0,2);
@@ -124,7 +124,7 @@
   document.querySelector("#close-overview").addEventListener("click", closeOverview);
   document.addEventListener("click", event => {
     const hotspot = event.target.closest("[data-deep-open]");
-    if (hotspot) openDeep({name: hotspot.dataset.componentName || hotspot.textContent.trim(), detail: hotspot.dataset.componentDetail || "这是命令路径上的真实物理边界。"});
+    if (hotspot) openDeep({name: hotspot.dataset.componentName || hotspot.textContent.trim(), detail: hotspot.dataset.componentDetail || "这是当前 CRUD 数据路径上的一个关键步骤。"});
     const nav = event.target.closest("[data-overview-index]"); if (nav) { show(Number(nav.dataset.overviewIndex)); closeOverview(); }
     const related = event.target.closest("[data-related-index]"); if (related) { show(Number(related.dataset.relatedIndex)); closeDeep(); }
   });

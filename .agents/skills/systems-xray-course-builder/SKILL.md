@@ -1,6 +1,6 @@
 ---
 name: systems-xray-course-builder
-description: Design, implement, or review Systems X-Ray interactive desktop principle courses in this repository. Use for Kafka, OpenSearch, Redis, PostgreSQL, JVM, Spring Boot, Kubernetes, or other middleware lessons; slide order; teaching copy; physical diagrams; state animations; and cross-course UI consistency. Do not use for unrelated websites or ordinary documentation.
+description: Design, implement, or review Systems X-Ray interactive desktop principle courses in this repository. Use for Kafka, OpenSearch, Redis, PostgreSQL, JVM, Spring Boot, Kubernetes, or other middleware lessons; CRUD/data-flow explanations; slide order; diagrams; state animations; and cross-course UI consistency. Do not use for unrelated websites or ordinary documentation.
 ---
 
 # Systems X-Ray Course Builder
@@ -18,8 +18,8 @@ Build a desktop-first interactive course that lets a learner follow one concrete
 ## Non-negotiable course contract
 
 1. Choose one named protagonist and preserve its identity across the whole course.
-2. Begin with the learner's business intent and a high-level physical map.
-3. Follow real causal order from API to process, memory, network, storage, replica, visibility, read, failure, and recovery.
+2. Begin with the learner's business intent and a high-level CRUD/data-flow map.
+3. Follow the real causal order of the operation. Introduce process, memory, network, storage, or replica details only where they explain behavior, performance, visibility, durability, consistency, failure, or recovery.
 4. Let every slide answer exactly one question.
 5. Show state change as `Before → Current → After` whenever a mechanism mutates state.
 6. Make every arrow state who initiates, what moves, why it moves, and when the step is complete.
@@ -62,12 +62,12 @@ Use this order unless the system requires a justified variation:
 
 ```text
 Business action
-→ high-level physical map
+→ high-level CRUD/data-flow map
 → request/object anatomy
 → routing and coordination
 → write/update/delete path
 → visibility and read/search path
-→ physical storage
+→ relevant storage/state changes
 → replication and acknowledgement
 → failure and recovery
 → performance
@@ -81,7 +81,7 @@ Introduce a term before relying on it. If one slide needs two state transitions 
 
 ### 4. Draw for explanation
 
-Choose one diagram purpose per slide: topology, handoff sequence, physical containment, state transition, or comparison. Keep one dominant reading path and one highlighted current actor. Use labels on arrows and visible boundary nesting. See the diagram grammar for exact rules.
+Choose one diagram purpose per slide: CRUD/data flow, handoff sequence, state transition, relevant containment, or comparison. Keep one dominant reading path and one highlighted current actor. Use labels on arrows; draw physical boundaries only when they affect the answer. See the diagram grammar for exact rules.
 
 ### 5. Implement as an interactive desktop lesson
 
@@ -102,10 +102,9 @@ Do not approve a slide when any of these is true:
 - it is a row of boxes with no mechanism or state change;
 - the title names a topic instead of asking a useful question;
 - an arrow has no direction or payload meaning;
-- the diagram mixes logical and physical boundaries without labeling them;
+- the diagram adds physical layers that do not help answer the slide's question;
 - “success” is asserted without an acknowledgement or visibility condition;
 - a config value appears without explaining whether it is default and why it is used;
 - the bottom summary repeats the slide verbatim;
 - important content is hidden in “more details” merely to make the slide look empty;
 - content is made to fit by shrinking type or adding a scrollbar.
-

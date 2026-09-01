@@ -293,7 +293,7 @@
     ["CREATE 07 · MAPPING", mappingPhysical],
     ["CREATE 08 · ANALYZER", analyzer],
     ["CREATE 09 · INVERTED INDEX", inverted],
-    ["CREATE 10 · PHYSICAL STRUCTURES", physicalViews],
+    ["CREATE 10 · INDEX STRUCTURES", physicalViews],
     ["CREATE 13 · REPLICA", replica],
     ["CREATE 14 · REFRESH", refresh],
     ["CREATE 15 · SEGMENT FILES", segmentFiles],

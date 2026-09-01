@@ -124,7 +124,7 @@
         <button class="replace-api index-api hotspot" type="button" data-deep-open data-component-name="Index / Replace" data-component-detail="PUT /_doc/{id} 把请求体当成新的完整 Document；已存在时写完整新 Lucene 文档并 soft-delete 旧版本，未发送字段不会自动继承。"><span>INDEX</span><code>PUT /_doc/sku-8821</code><b>exists → replace full document</b></button>
       </section>
       <section class="replace-segment-frame">
-        <header><span>LUCENE SHARD P2 · REPLACE PHYSICAL VIEW</span><b>逻辑 1 份 · 物理暂时 2 个版本</b></header>
+        <header><span>LUCENE SHARD P2 · REPLACE STATE</span><b>逻辑 1 份 · 底层暂时 2 个版本</b></header>
         <button class="replace-version old-copy hotspot" type="button" data-deep-open data-component-name="旧 Lucene Document" data-component-detail="旧版本的 postings、Doc Values 与 _source 仍在旧 Segment 中；隐藏 __soft_deletes 标记让新 Searcher 不再把它当业务 live 文档。"><small>SEGMENT _2 · docID 7</small><strong>#D2048 · v7</strong><pre>{ name, price:249, stock:10 }</pre><em>__soft_deletes=1</em></button>
         <div class="replace-write"><span>softUpdateDocument</span><i></i><b>mark old + add full new</b></div>
         <button class="replace-version new-copy hotspot" type="button" data-deep-open data-component-name="新 Lucene Document" data-component-detail="普通 Index API 的请求体就是新完整文档。若只发送 price，新版本只包含 price；Update API 才会先读旧 _source 再合并局部字段。"><small>NEW DOC · docID 42</small><strong>#D2048 · v8</strong><pre>{ price:229 }</pre><em>LIVE after Refresh</em></button>
@@ -638,7 +638,7 @@
       const component = node
         ? { label: node[0], name: node[1], description: node[2] }
         : deepButton.dataset.componentName
-          ? { label: "PHYSICAL COMPONENT", name: deepButton.dataset.componentName, description: deepButton.dataset.componentDetail || "这是当前物理路径上的一个组件。" }
+          ? { label: "FLOW COMPONENT", name: deepButton.dataset.componentName, description: deepButton.dataset.componentDetail || "这是当前 CRUD 数据路径上的一个关键组件。" }
           : null;
       openDeep(component);
     }

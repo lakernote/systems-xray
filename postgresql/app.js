@@ -75,7 +75,7 @@
     lastFocus = document.activeElement;
     document.querySelector("#deep-kicker").textContent = `DEEP DIVE · ${item.section}`;
     document.querySelector("#deep-title").textContent = component?.name || plain(item.question);
-    document.querySelector("#deep-stage").textContent = `${component ? "物理组件" : "当前边界"} · ${item.stageName}`;
+    document.querySelector("#deep-stage").textContent = `${component ? "流程组件" : "当前边界"} · ${item.stageName}`;
     document.querySelector("#deep-boundary").textContent = component ? `${component.detail} ${item.deep.boundary}` : item.deep.boundary;
     const failures = component ? [`如果 ${component.name} 在这里阻塞或失败，当前事务不会无代价地越过这个边界。`, ...item.deep.failures] : item.deep.failures;
     document.querySelector("#deep-failure").innerHTML = failures.slice(0, 3).map(text => `<li>${esc(text)}</li>`).join("");

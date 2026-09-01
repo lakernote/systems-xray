@@ -1,18 +1,25 @@
 # Diagram Grammar
 
+## Start from the CRUD/data path
+
+The default diagram is the operation's data flow: request, routing, state change, acknowledgement, visibility, and later cleanup/recovery. A physical topology is optional. Add hosts, processes, operating-system layers, or disks only when their location or boundary changes the explanation.
+
+Do not make the learner traverse an infrastructure map merely to understand a CRUD operation.
+
 ## First choose what the diagram must prove
 
 Use only one primary diagram type on a slide.
 
 | Diagram type | Use it to answer | Required content |
 |---|---|---|
-| Physical topology | “Where does this run or live?” | host/process/node/disk boundaries and network connections |
+| CRUD/data flow | “This operation goes through which decisions and states?” | request, routing, current state, mutation, response, visibility |
+| Physical topology | “Does location or boundary change the behavior?” | only the relevant host/process/node/disk boundaries |
 | Handoff sequence | “Who calls whom, in what order?” | actors, numbered arrows, payload, ACK/return path |
 | Physical containment | “What is inside what?” | cluster → node → process → memory/file nesting |
 | State transition | “What changed?” | Before/Current/After and named state variables |
 | Comparison | “Why choose A instead of B?” | same dimensions, explicit win/loss, no mixed scales |
 
-Do not use a topology to explain timing, or a sequence to imply physical containment.
+Prefer CRUD/data flow. Do not use a topology to explain timing, or a sequence to imply physical containment.
 
 ## The arrow contract
 
@@ -34,7 +41,7 @@ Use:
 
 ## Boundary grammar
 
-Draw real containment in this order when relevant:
+Draw real containment only when it matters. When relevant, use this order:
 
 ```text
 region / availability zone
@@ -117,11 +124,11 @@ Keep durations short and deliberate. Pause after each meaningful transition. Res
 
 ## Diagram review questions
 
-- Can the learner point to physical hosts, processes, memory, and files without guessing?
+- Can the learner follow the CRUD/data path without first decoding infrastructure?
+- Are physical boundaries included only where they change behavior or guarantees?
 - Is the active side of replication clear: push, pull, or coordinated operation?
 - Is the protagonist visible at this step?
 - Does the arrow carry a named payload or operation?
 - Does the diagram show what changed and what did not?
 - Can the success condition be inferred from the return path?
 - Would removing any box make the explanation clearer? If yes, remove it.
-

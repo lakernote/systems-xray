@@ -225,7 +225,7 @@
       "term = lookup_dictionary(\"noise\")\nfor docID in postings(term):\n  score += bm25(term, docID)", DOC.analyzer,
       deep("Lucene docID 是内部实现细节，不是业务主键。Segment merge 会把活文档复制到新 Segment 并重新编号。", ["应用把内部 docID 当稳定 ID 缓存。", "后台 merge 完成。", "缓存指向错误文档或失效。"], [["解释", "GET products-v3/_explain/sku-8821"], ["termvector", "POST products-v3/_termvectors/sku-8821"], ["segments", "GET _cat/segments/products-v3?v"]], "为什么 phrase query 比简单 term filter 更需要位置数据？", "短语查询要验证多个 term 在同一文档中的相对 position，而普通包含判断只需 docID 集合。")),
 
-    slide("10 · FOUR PHYSICAL VIEWS", "lucene", "一条 Document 同时变成哪几种结构？", "搜索、聚合与返回需要不同的数据方向。", "#D2048 不只存在一次：倒排索引服务 term→docs；Doc Values 服务 doc→field value；_source 保存原 JSON；stored fields 可单独存字段。", "structure",
+    slide("10 · FOUR INDEX VIEWS", "lucene", "一条 Document 同时变成哪几种结构？", "搜索、聚合与返回需要不同的数据方向。", "#D2048 不只存在一次：倒排索引服务 term→docs；Doc Values 服务 doc→field value；_source 保存原 JSON；stored fields 可单独存字段。", "structure",
       [["INVERTED", "term → docIDs", "full-text / filter"], ["DOC VALUES", "docID → value", "sort / agg / script"], ["_SOURCE", "stored original JSON", "fetch / update / reindex"], ["STORED", "selected fields", "optional"]],
       [["方向", "倒排与列式访问方向相反"], ["磁盘", "Doc Values 通常是磁盘列式结构，由 OS cache 加速"], ["代价", "同一业务值可能为不同用途重复编码"]],
       "检索快不是靠一种万能结构，而是用空间换取不同访问模式的速度。",
@@ -558,7 +558,7 @@
     ["06 · MAPPING", "CREATE 07 · MAPPING"],
     ["08 · ANALYZER", "CREATE 08 · ANALYZER"],
     ["09 · INVERTED INDEX", "CREATE 09 · INVERTED INDEX"],
-    ["10 · FOUR PHYSICAL VIEWS", "CREATE 10 · PHYSICAL STRUCTURES"],
+    ["10 · FOUR INDEX VIEWS", "CREATE 10 · INDEX STRUCTURES"],
     ["10A · LIVE VERSION MAP", "CREATE 11 · VERSION MAP"],
     ["11 · BUFFER + TRANSLOG", "CREATE 12 · WRITE ORDER"],
     ["12 · DOCUMENT REPLICATION", "CREATE 13 · REPLICA"],

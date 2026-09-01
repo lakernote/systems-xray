@@ -37,7 +37,7 @@ For every write/update/delete/read/search flow, answer in order:
 
 1. Which node receives the request?
 2. How is the logical target resolved?
-3. How is the physical owner selected?
+3. How is the target partition, shard, key slot, page, or row selected?
 4. Which thread/event loop executes it?
 5. What in-memory state changes?
 6. What log/file/page changes?
@@ -111,11 +111,10 @@ Review slides sequentially and make a dependency list. Fail the review if a term
 For each section, check:
 
 - **mechanism**: complete causal path;
-- **physicality**: process, memory, network, and durable structure are distinguished;
+- **implementation depth**: relevant process, memory, network, and durable structures are distinguished without becoming the course's organizing axis;
 - **guarantee**: success/visibility/failure boundary is explicit;
 - **production use**: default, tuning, diagnosis, and trade-off are actionable;
 - **transfer**: one comparison shows why another system chooses differently;
 - **visual truth**: diagrams agree with text and pseudocode.
 
 Remove slides that only restate a definition or repeat the previous diagram without adding a state transition, guarantee, failure, or trade-off.
-

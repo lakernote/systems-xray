@@ -75,7 +75,7 @@ Use this arc for a mechanism that spans several slides:
 9. **Trade-off** — connect the mechanism to latency, throughput, durability, availability, memory, disk, or operational cost.
 10. **Transfer** — compare how another system solves the same tension.
 
-Do not force all ten steps onto one slide. Use 2–4 consecutive slides and keep the physical context stable.
+Do not force all ten steps onto one slide. Use 2–4 consecutive slides and keep the data-flow context stable.
 
 ## One-slide content formula
 
@@ -97,7 +97,7 @@ Use the same questions for every technology so the learner builds transferable i
 
 | Lens | Questions |
 |---|---|
-| Core operations | How are create/read/update/delete—or their real equivalents—implemented? |
+| Core operations | What is the complete data path for create/read/update/delete—or their real equivalents? |
 | Performance | Where are batching, caching, sequential I/O, zero-copy, pipelining, parallelism, or reduced coordination used? |
 | High availability | Who replicates, who detects failure, who elects/promotes, and what state may be lost? |
 | Consistency | What ordering, isolation, visibility, and durability guarantees exist, and under which configuration? |
@@ -129,4 +129,3 @@ Annotate what the learner should notice. Keep it under roughly 12 lines. Put exa
 - **Magic success**: an ACK appears without naming required copies or persistence policy.
 - **Hidden essentials**: critical facts live only behind a click.
 - **Decorative animation**: dots move, but state and guarantees never change.
-
